@@ -1,10 +1,14 @@
 
-Start server from terminal:
+Start server from terminal > BotService:
 1. sbt
 2. run
 
 
 Test fb messenger webhook in terminal:
+
+validate: http://localhost:9000/fb-messenger-webhook?hub.mode=subscribe&hub.verify_token=VERIFY_TOKEN&hub.challenge=%22challenge%22
+
+send event:
 
 curl -X POST -H "Content-Type: application/json" --data-binary @- http://localhost:9000/fb-messenger-webhook <<EOF
 
