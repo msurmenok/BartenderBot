@@ -27,6 +27,14 @@ libraryDependencies ~= { _ map {
 // Take the first ServerWithStop because it's packaged into two jars
 assemblyMergeStrategy in assembly := {
   case PathList("play", "core", "server", "ServerWithStop.class") => MergeStrategy.first
+  case PathList(xs@_*) if xs.last == "io.netty.versions.properties" => MergeStrategy.rename
   case other => (assemblyMergeStrategy in assembly).value(other)
 }
+
+// publish to artifacts directory
+publishArtifact in(Compile, packageDoc) := false
+
+publishTo := Some(Resolver.file("file", new File("artifacts")))
+
+cleanFiles <+= baseDirectory { base => base / "artifacts" }
 
