@@ -2,7 +2,7 @@
 Description=bot-service-akka
 
 [Service]
-User=nobody
+User=bot
 # The configuration file application.properties should be here:
 WorkingDirectory=/opt/BartenderDeploy/ 
 ExecStart=/opt/BartenderDeploy/bin/boot
