@@ -15,7 +15,7 @@ object FbMessengerSendApiClient extends JsonSupport with Config with Logging {
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
 
-  def sendTextMessage(recipient: Recipient, text: String): Unit = {
+  def sendTextMessage(recipient: User, text: String): Unit = {
     rootLogger.info(s"sending message to recipient(${recipient.id}): $text")
     val body = FbMessengerRequest(recipient, Some(SendMessage(Some(text))))
     val response = sendFbMessengerRequest(body)
