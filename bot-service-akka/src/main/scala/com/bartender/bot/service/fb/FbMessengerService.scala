@@ -13,9 +13,18 @@ object FbMessengerService extends Directives with JsonSupport with Config with L
     } ~
       post {
         entity(as[FbMessengerResponse]) { response =>
-          val userMessage = response.entry.head.messaging.head.message.text.head
+          val userMessage = response.entry.head.messaging.head.message
+          val result: String = userMessage.text match {
+            case Some(text) => text
+            case None =>
+              val attachment = userMessage.attachments.get.head
+              attachment.`type` match {
+                case AttachmentType.location => attachment.payload.coordinates.head.toString
+                case _ => attachment.payload.url.get
+              }
+          }
           rootLogger.info(s"euser message: $userMessage")
-          complete(userMessage)
+          complete(result)
         }
       }
   }
