@@ -1,0 +1,27 @@
+Steps executed to set up the production environment:
+
+0.. Use "sbt-pack" SBT plugin to create a distributive of the application
+
+1. Set up DNS to have a domain name (bartender.betacode.ru)
+Just add one line to DNS settings for betacode.ru domain:
+
+bartender                IN A       107.170.202.204
+
+2. Set up nginx using instructions from here:
+https://www.nginx.com/resources/wiki/start/topics/tutorials/install/
+
+3. Create an SSL certificate using letsencrypt service. Tutorial: https://certbot.eff.org/#ubuntuxenial-nginx
+Command: letsencrypt certonly --webroot -w /var/www/html -d bartender.betacode.ru
+
+4. Configure nginx to use SSL and to be a proxy for the akka service
+Using this tutorial, slightly modifying (domain name, path to SSL sertificate, etc):
+http://blog.papauschek.com/2013/10/play-framework-https-nginx/
+
+See /deployment/nginx/default configuration file.
+
+5. Create a systemd service to run akka application. Tutorial: http://stackoverflow.com/questions/21503883/spring-boot-application-as-a-service/22121547#22121547
+
+See service configuration in /deployment/services/bot-service-akka.service
+
+
+Instructions for rebuilding/redeployment: /deployment/build-deploy.sh
