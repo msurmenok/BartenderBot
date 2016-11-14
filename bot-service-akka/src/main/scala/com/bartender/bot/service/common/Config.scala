@@ -16,4 +16,6 @@ trait Config {
 
   val fbMessengerWebhook = routes.getString("fb-messenger-webhook")
   val infoRoute = routes.getString("info")
+
+  val fbSendApiUrl = config.getConfig("fb_send_api").getString("url")
 }

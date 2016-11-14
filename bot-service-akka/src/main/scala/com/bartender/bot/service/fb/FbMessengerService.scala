@@ -23,7 +23,8 @@ object FbMessengerService extends Directives with JsonSupport with Config with L
                 case _ => attachment.payload.url.get
               }
           }
-          rootLogger.info(s"euser message: $userMessage")
+          rootLogger.info(s"user message: $userMessage")
+          FbMessengerSendApiClient.sendTextMessage(response.entry.head.messaging.head.recipient, result)
           complete(result)
         }
       }

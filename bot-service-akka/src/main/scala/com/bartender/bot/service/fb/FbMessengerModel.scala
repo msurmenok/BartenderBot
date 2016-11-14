@@ -42,7 +42,7 @@ case class Payload(url: Option[String] = None,
                    attachment_id: Option[String] = None,
                    coordinates: Option[Coordinates] = None,
                    template_type: Option[TemplateType.Value] = None
-                 //  buttons: Option[Seq[Button]] = None
+                   //  buttons: Option[Seq[Button]] = None
                   )
 
 case class Coordinates(lat: Long, long: Long)
@@ -51,13 +51,12 @@ object TemplateType extends Enumeration {
   type EnumA = Value
   val generic, button, list = Value
 }
+
 //case class Button(   "type":"web_url",
 //"url":"https://petersapparel.parseapp.com",
 //"title":"Show Website")
 
 //web_url, postback или phone_number
-
-
 
 
 /** * request models for send API FA Messenger ***/
@@ -71,9 +70,9 @@ object TemplateType extends Enumeration {
   * @param notification_type - for push notification, default - REGULAR
   */
 case class FbMessengerRequest(recipient: Recipient,
-                              message: Option[SendMessage],
-                              sender_action: Option[SenderAction.Value],
-                              notification_type: Option[NotificationType.Value])
+                              message: Option[SendMessage] = None,
+                              sender_action: Option[SenderAction.Value] = None,
+                              notification_type: Option[NotificationType.Value] = None)
 
 object SenderAction extends Enumeration {
   type EnumA = Value
@@ -93,8 +92,8 @@ object NotificationType extends Enumeration {
   * @param quick_replies - you can help user answer on your question
   * @param metadata      - you receive it in your Webhook max 1000 char
   */
-case class SendMessage(text: Option[String],
-                       attachment: Option[Attachment],
+case class SendMessage(text: Option[String] = None,
+                       attachment: Option[Attachment] = None,
                        quick_replies: Option[Seq[QuickReplyRequest]] = None,
                        metadata: Option[String] = None)
 
