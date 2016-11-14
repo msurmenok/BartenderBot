@@ -4,7 +4,7 @@ case class FbMessengerResponse(`object`: String, entry: Seq[Entry])
 
 case class Entry(id: String, time: Long, messaging: Seq[Messaging])
 
-case class Messaging(sender: User, recipient: User, timestamp: Long, message: Message)
+case class Messaging(sender: User, recipient: User, timestamp: Long, message: Option[Message] = None)
 
 case class User(id: String)
 

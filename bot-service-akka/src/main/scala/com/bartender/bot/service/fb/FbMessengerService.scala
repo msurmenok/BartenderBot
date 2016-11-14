@@ -15,18 +15,18 @@ object FbMessengerService extends Directives with JsonSupport with Config with L
         entity(as[FbMessengerResponse]) { response =>
           rootLogger.info(s"$response")
           val userMessage = response.entry.last.messaging.last.message
-          val result: String = userMessage.text match {
-            case Some(text) => text
-            case None =>
-              val attachment = userMessage.attachments.get.last
-              attachment.`type` match {
-                case AttachmentType.location => attachment.payload.coordinates.last.toString
-                case _ => attachment.payload.url.get
-              }
+          val result: String = userMessage.getOrElse(Message("1", 1)).text match {
+            case Some(text) => {
+              text
+            }
+            case None => "..."
+
           }
-          rootLogger.info(s"user message: $userMessage")
-          FbMessengerSendApiClient.sendTextMessage(response.entry.last.messaging.last.sender, result)
-          complete(result)
+          if(result != "..."){
+            FbMessengerSendApiClient.sendTextMessage(response.entry.last.messaging.last.sender, result)
+          }
+
+          complete("Ok")
         }
       }
   }
