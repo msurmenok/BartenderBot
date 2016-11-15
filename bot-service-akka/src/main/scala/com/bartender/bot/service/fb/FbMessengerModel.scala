@@ -4,9 +4,8 @@ case class FbMessengerResponse(`object`: String, entry: Seq[Entry])
 
 case class Entry(id: String, time: Long, messaging: Seq[Messaging])
 
-case class Messaging(sender: User, recipient: User, timestamp: Long, message: Option[Message] = None)
+case class Messaging(sender: Sender, recipient: Recipient, timestamp: Long, message: Option[Message] = None)
 
-case class User(id: String)
 
 case class Message(mid: String,
                    seq: Long,
@@ -67,7 +66,6 @@ object TemplateType extends Enumeration {
   * @param sender_action     - you can send state messaging
   * @param notification_type - for push notification, default - REGULAR
   */
-case class FbMessengerRequest(recipient: User,
                               message: Option[SendMessage] = None,
                               sender_action: Option[SenderAction.Value] = None,
                               notification_type: Option[NotificationType.Value] = None)
