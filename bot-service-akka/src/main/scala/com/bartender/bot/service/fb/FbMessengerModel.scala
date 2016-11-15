@@ -6,6 +6,9 @@ case class Entry(id: String, time: Long, messaging: Seq[Messaging])
 
 case class Messaging(sender: Sender, recipient: Recipient, timestamp: Long, message: Option[Message] = None)
 
+case class Sender(id: String)
+
+case class Recipient(id: String)
 
 case class Message(mid: String,
                    seq: Long,
@@ -53,7 +56,7 @@ object TemplateType extends Enumeration {
 //"url":"https://petersapparel.parseapp.com",
 //"title":"Show Website")
 
-//web_url, postback или phone_number
+//web_url, postback or phone_number
 
 
 /** * request models for send API FA Messenger ***/
@@ -66,6 +69,7 @@ object TemplateType extends Enumeration {
   * @param sender_action     - you can send state messaging
   * @param notification_type - for push notification, default - REGULAR
   */
+case class FbMessengerRequest(recipient: Recipient,
                               message: Option[SendMessage] = None,
                               sender_action: Option[SenderAction.Value] = None,
                               notification_type: Option[NotificationType.Value] = None)

@@ -6,7 +6,7 @@ import spray.json.{DefaultJsonProtocol, DeserializationException, JsString, JsVa
 trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
 
   implicit object AttachmentTypeFormat extends RootJsonFormat[AttachmentType.Value] { //todo: maybe possible create common method for parse enum
-    def write(obj: AttachmentType.Value): JsValue = JsString(obj.toString)
+  def write(obj: AttachmentType.Value): JsValue = JsString(obj.toString)
 
     def read(json: JsValue): AttachmentType.Value = json match {
       case JsString(str) => AttachmentType.withName(str)
@@ -15,7 +15,7 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   }
 
   implicit object TemplateTypeFormat extends RootJsonFormat[TemplateType.Value] { //todo: maybe possible create common method for parse enum
-    def write(obj: TemplateType.Value): JsValue = JsString(obj.toString)
+  def write(obj: TemplateType.Value): JsValue = JsString(obj.toString)
 
     def read(json: JsValue): TemplateType.Value = json match {
       case JsString(str) => TemplateType.withName(str)
@@ -28,7 +28,8 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val attachmentFormat = jsonFormat2(Attachment)
   implicit val quickReplyResponseFormat = jsonFormat1(QuickReplyResponse)
   implicit val messageFormat = jsonFormat6(Message)
-  implicit val userFormat = jsonFormat1(User)
+  implicit val recipientFormat = jsonFormat1(Recipient)
+  implicit val senderFormat = jsonFormat1(Sender)
   implicit val messagingFormat = jsonFormat4(Messaging)
   implicit val entryFormat = jsonFormat3(Entry)
   implicit val fbMessengerResponseFormat = jsonFormat2(FbMessengerResponse)
