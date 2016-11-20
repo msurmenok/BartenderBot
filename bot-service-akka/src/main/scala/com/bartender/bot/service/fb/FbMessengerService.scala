@@ -14,41 +14,15 @@ class FbMessengerService(receiver: MessageReceiver) extends Directives with Json
       }
     } ~
       post {
-        /*  entity(as[FbMessengerResponse]) { response =>
-            val entry = response.entry.last
-            rootLogger.info(s"last entry: $entry")
-            val messaging = entry.messaging.last
-            rootLogger.info(s"last messaging: $messaging")
-            val userMessage = messaging.message
-            val result: String = userMessage.text match {
-              case Some(text) => text
-              case None =>
-                val attachment = userMessage.attachments.get.last
-                attachment.`type` match {
-                  case AttachmentType.location => attachment.payload.coordinates.last.toString
-                  case _ => attachment.payload.url.get
-                }
-            }
-            rootLogger.info(s"user message: $userMessage")
-            FbMessengerSendApiClient.sendTextMessage(Recipient(messaging.sender.id), result)
-            complete(result)
-          } */
-        /*
-                extractRequestEntity { response =>
-                  rootLogger.info(s"$response")
-                  complete("OK")
-                }
-        */
-
         entity(as[FbMessengerHookBody]) { hookBody =>
           rootLogger.info(s"$hookBody")
           val userMessage = hookBody.entry.last.messaging.last.message
 
-          if (userMessage != None) {
+          if (userMessage.isDefined) {
             val messageTextOption = userMessage.get.text
-            if (messageTextOption != None) {
-              val message = new Message(messageTextOption.get)
-              val recipient = new Recipient(hookBody.entry.last.messaging.last.sender.id)
+            if (messageTextOption.isDefined) {
+              val message = Message(messageTextOption.get)
+              val recipient = Recipient(hookBody.entry.last.messaging.last.sender.id)
 
               receiver.Receive(message, recipient)
             }

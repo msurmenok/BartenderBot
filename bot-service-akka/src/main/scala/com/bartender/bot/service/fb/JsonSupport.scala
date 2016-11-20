@@ -31,7 +31,7 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val serviceMessageFormat = jsonFormat3(FbServiceMessage)
   implicit val recipientFormat = jsonFormat1(FbRecipient)
   implicit val senderFormat = jsonFormat1(FbSender)
-  implicit val messagingFormat = jsonFormat4(FbMessaging)
+  implicit val messagingFormat = jsonFormat6(FbMessaging)
   implicit val entryFormat = jsonFormat3(FbEntry)
   implicit val fbMessengerResponseFormat = jsonFormat2(FbMessengerHookBody)
 

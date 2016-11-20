@@ -13,7 +13,7 @@ class MessageReceiverImpl(sender: MessageSender) extends MessageReceiver {
   }
 
   private def GenerateResponse(message: Message): Message = {
-    new Message(message.text)
+    Message(message.text)
   }
 
   private def SaveMessage(message: Message): Unit =
