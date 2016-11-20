@@ -1,7 +1,11 @@
-cd /opt/BartenderBot/bot-service-akka
-sudo git pull origin master
+rm -rf /opt/BartenderBuildWorkspace/*
+git pull
+cp -R /opt/BartenderBot/bot-service-akka/* /opt/BartenderBuildWorkspace
+rm /opt/BartenderBuildWorkspace/src/main/resources/application.conf
+cp /opt/BartenderConfig/application.conf /opt/BartenderBuildWorkspace/src/main/resources
+cd /opt/BartenderBuildWorkspace
 sudo systemctl stop bot-service-akka
-sudo sbt pack
-sudo rm -rf /opt/BartenderDeploy/*
-sudo cp target/pack/* /opt/BartenderDeploy -r
+sbt pack
+rm -rf /opt/BartenderDeploy/*
+cp target/pack/* /opt/BartenderDeploy -r
 sudo systemctl start bot-service-akka

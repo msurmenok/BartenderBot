@@ -5,8 +5,17 @@ import akka.http.scaladsl.server.ValidationRejection
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.util.ByteString
 import com.bartender.bot.service.common.Config
-import com.bartender.bot.service.fb.{Coordinates, FbMessengerService, JsonSupport}
+import com.bartender.bot.service.domain.{Message, Recipient}
+import com.bartender.bot.service.fb.{FbCoordinates, FbMessengerService, JsonSupport}
+import com.bartender.bot.service.services.MessageReceiver
 import org.scalatest.{Matchers, WordSpec}
+
+class MessageReceiverStub extends MessageReceiver {
+  var text: String = null
+  override def Receive(message: Message, recipient: Recipient): Unit = {
+    this.text = message.text
+  }
+}
 
 class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteTest with JsonSupport with Config {
 
@@ -15,47 +24,72 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
     val webhookPath = "/" + fbMessengerWebhook
 
     "validate verify token" in {
+      val receiver = new MessageReceiverStub()
+      val fbMessengerService = new FbMessengerService(receiver)
+
       val challenge = "challenge"
       val path = webhookPath + s"?hub.mode=subscribe&hub.verify_token=$fbMessengerVerifyToken&hub.challenge=$challenge"
-      Get(path) ~> FbMessengerService.route ~> check {
+      Get(path) ~> fbMessengerService.route ~> check {
         responseAs[String] shouldEqual challenge
       }
     }
 
 
     "validate not verify token" in {
-      Get(webhookPath + s"?hub.mode=subscribe&hub.verify_token=not_valid_token") ~> FbMessengerService.route ~> check {
+      val receiver = new MessageReceiverStub()
+      val fbMessengerService = new FbMessengerService(receiver)
+
+      Get(webhookPath + s"?hub.mode=subscribe&hub.verify_token=not_valid_token") ~> fbMessengerService.route ~> check {
         rejection shouldEqual ValidationRejection("Verify token not correct!")
       }
     }
 
     "receive text message" in {
+      val receiver = new MessageReceiverStub()
+      val fbMessengerService = new FbMessengerService(receiver)
+
       val requestEntity = HttpEntity(MediaTypes.`application/json`, textMessageRequest)
-      Post(webhookPath, requestEntity) ~> FbMessengerService.route ~> check {
-        status.isSuccess() shouldEqual true
+      Post(webhookPath, requestEntity) ~> fbMessengerService.route ~> check {
+        responseAs[String] shouldEqual "Ok"
+        receiver.text shouldEqual "hello, world!"
       }
     }
 
     "receive attachments message" in {
+      val receiver = new MessageReceiverStub()
+      val fbMessengerService = new FbMessengerService(receiver)
+
       val requestEntity = HttpEntity(MediaTypes.`application/json`, attachmentsMessageRequest)
-      Post(webhookPath, requestEntity) ~> FbMessengerService.route ~> check {
-        status.isSuccess() shouldEqual true
+      Post(webhookPath, requestEntity) ~> fbMessengerService.route ~> check {
+        responseAs[String] shouldEqual "Ok"
+        receiver.text shouldEqual "IMAGE_URL"
       }
     }
 
     "receive location message" in {
+      val receiver = new MessageReceiverStub()
+      val fbMessengerService = new FbMessengerService(receiver)
+
       val requestEntity = HttpEntity(MediaTypes.`application/json`, locationMessageRequest)
-      Post(webhookPath, requestEntity) ~> FbMessengerService.route ~> check {
-        status.isSuccess() shouldEqual true
+      Post(webhookPath, requestEntity) ~> fbMessengerService.route ~> check {
+        responseAs[String] shouldEqual "Ok"
+        receiver.text shouldEqual FbCoordinates(lat = 0, long = 0).toString
       }
     }
 
     "receive quick reply message" in {
+      val receiver = new MessageReceiverStub()
+      val fbMessengerService = new FbMessengerService(receiver)
+
       val requestEntity = HttpEntity(MediaTypes.`application/json`, quickReplyMessageRequest)
-      Post(webhookPath, requestEntity) ~> FbMessengerService.route ~> check {
+      Post(webhookPath, requestEntity) ~> fbMessengerService.route ~> check {
         status.isSuccess() shouldEqual true
       }
     }
+
+    "request 1" in {
+      val receiver = new MessageReceiverStub()
+      val fbMessengerService = new FbMessengerService(receiver)
 
     "request 1 was be parsed" in {
       val requestEntity = HttpEntity(MediaTypes.`application/json`, request1)
@@ -66,7 +100,7 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
 
     "request 2 was be parsed" in {
       val requestEntity = HttpEntity(MediaTypes.`application/json`, request2)
-      Post(webhookPath, requestEntity) ~> FbMessengerService.route ~> check {
+      Post(webhookPath, requestEntity) ~> fbMessengerService.route ~> check {
         status.isSuccess() shouldEqual true
       }
     }
