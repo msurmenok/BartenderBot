@@ -1,5 +1,5 @@
 cd /opt/BartenderBot/bot-service-akka
-sudo git pull origin master
+sudo git pull
 sudo systemctl stop bot-service-akka
 sudo sbt pack
 sudo rm -rf /opt/BartenderDeploy/*
