@@ -1,6 +1,6 @@
 rm -rf /opt/BartenderBuildWorkspace/*
 git pull
-cp ./botservice-akka/* /opt/BartenderBuildWorkspace
+cp /opt/BartenderBot/bot-service-akka/* /opt/BartenderBuildWorkspace
 rm /opt/BartenderBuildWorkspace/src/main/resources/application.conf
 cp /opt/BartenderConfig/application.config /opt/BartenderBuildWorkspace/src/main/resources
 cd /opt/BartenderBuildWorkspace
