@@ -4,7 +4,12 @@ case class FbMessengerResponse(`object`: String, entry: Seq[Entry])
 
 case class Entry(id: String, time: Long, messaging: Seq[Messaging])
 
-case class Messaging(sender: Sender, recipient: Recipient, timestamp: Long, message: Option[Message] = None)
+case class Messaging(sender: Sender,
+                     recipient: Recipient,
+                     timestamp: Long,
+                     message: Option[Message] = None,
+                     delivery: Option[ServiceMessage] = None,
+                     read: Option[ServiceMessage] = None)
 
 case class Sender(id: String)
 
@@ -16,6 +21,8 @@ case class Message(mid: String,
                    quick_reply: Option[QuickReplyResponse] = None,
                    attachments: Option[Seq[Attachment]] = None,
                    metadata: Option[String] = None)
+
+case class ServiceMessage(watermark: Long, seq: Long, mids: Option[Seq[String]])
 
 case class QuickReplyResponse(payload: String)
 
