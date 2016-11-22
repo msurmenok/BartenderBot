@@ -19,7 +19,7 @@ object FbMessengerSendApiClient extends JsonSupport with Config with Logging {
     rootLogger.info(s"sending message to recipient(${recipient.id}): $text")
     val body = FbMessengerRequest(recipient, Some(FbSendMessage(Some(text))))
     val response = sendFbMessengerRequest(body)
-    rootLogger.info(s"result messge sending: ${response.status}")
+    rootLogger.info(s"result message sending: ${response.status}")
     rootLogger.info(s"${response.entity}")
   }
 

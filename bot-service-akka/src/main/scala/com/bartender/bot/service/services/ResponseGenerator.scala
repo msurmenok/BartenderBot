@@ -61,12 +61,12 @@ class SimpleResponseGenerator extends ResponseGenerator {
   }
 
   private def isGreeting(textMessage: String): Boolean = {
-    var text = textMessage.toLowerCase()
+    val text = textMessage.toLowerCase()
     Seq("hello", "hi", "good morning", "good evening", "good afternoon").count(text.contains) > 0
   }
 
   private def isYes(textMessage: String): Boolean = {
-    var text = textMessage.toLowerCase()
+    val text = textMessage.toLowerCase()
     Seq("y", "of course", "sure", "absolutely", "certainly").count(text.contains) > 0
   }
 

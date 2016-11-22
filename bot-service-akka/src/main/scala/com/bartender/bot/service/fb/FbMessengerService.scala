@@ -20,15 +20,14 @@ class FbMessengerService(receiver: MessageReceiver) extends Directives with Json
             if (hookBody.`object` matches "page") hookBody.entry.foreach(
               //just text message for first time todo support all message type
               _.messaging.filter(fbMessaging => fbMessaging.message.isDefined && fbMessaging.message.get.text.isDefined)
-                .map(_.message.get)
+                .map(messaging => (messaging.message.get, messaging.sender.id))
                 .foreach { fbMessage =>
-                  val message = Message(fbMessage.text.get)
-                  val recipient = Recipient(hookBody.entry.last.messaging.last.sender.id)
-                  val sendingMessageInfo = s"send message: ${message.text} to recipient(${recipient.id})"
+                  val message = Message(fbMessage._1.text.get)
+                  val recipient = Recipient(fbMessage._2)
                   receiver.Receive(message, recipient)
                 })
 
-            complete("Ok")
+            complete("Success")
           }
         }
 
