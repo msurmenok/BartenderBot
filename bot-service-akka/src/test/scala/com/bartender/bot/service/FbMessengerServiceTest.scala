@@ -10,10 +10,11 @@ import com.bartender.bot.service.fb.{FbMessengerService, JsonSupport}
 import com.bartender.bot.service.services.MessageReceiver
 import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
 
+
 class MessageReceiverStub extends MessageReceiver {
   var text: String = _
 
-  override def Receive(message: Message, recipient: Recipient): Unit = {
+  override def Receive(message: Message, recipient: Recipient) {
     this.text = message.text
   }
 }
@@ -75,6 +76,7 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
       val requestEntity = HttpEntity(MediaTypes.`application/json`, quickReplyMessageRequest)
       Post(webhookPath, requestEntity) ~> fbMessengerService.route ~> check {
         status.isSuccess() shouldEqual true
+        receiver.text shouldEqual "hello, world!"
       }
     }
 

@@ -1,23 +1,21 @@
 package com.bartender.bot.service.services
-import com.bartender.bot.service.domain.{Message, Recipient}
 
-class MessageReceiverImpl(sender: MessageSender) extends MessageReceiver {
-  override def Receive(message: Message, recipient: Recipient): Unit =
-  {
-    this.SaveMessage(message)
+import com.bartender.bot.service.domain.{Message, Recipient, RecipientInfo}
 
-    val response = this.GenerateResponse(message)
-    this.SaveMessage(response)
+class MessageReceiverImpl(sender: MessageSender, dao: Dao,
+                          responseGenerator: ResponseGenerator) extends MessageReceiver {
 
-    sender.SendMessage(response, recipient)
-  }
+  override def Receive(message: Message, recipient: Recipient) {
 
-  private def GenerateResponse(message: Message): Message = {
-    Message(message.text)
-  }
+    dao.saveRecipientMessage(message)
 
-  private def SaveMessage(message: Message): Unit =
-  {
-    // TODO: store the message in DB
+    val recipientInfo = dao.getRecipientInfo(recipient)
+
+    val updatedRecipientInfo = responseGenerator.generateResponse(message, recipientInfo)
+
+    dao.saveResponse(updatedRecipientInfo.lastResponse)
+    dao.saveOrUpdateRecipientInfo(recipient, updatedRecipientInfo)
+
+    sender.SendMessage(updatedRecipientInfo.lastResponse, recipient)
   }
 }
