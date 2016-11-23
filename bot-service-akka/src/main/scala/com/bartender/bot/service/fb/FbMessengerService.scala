@@ -1,6 +1,5 @@
 package com.bartender.bot.service.fb
 
-import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directives, StandardRoute, ValidationRejection}
 import com.bartender.bot.service.common.{Config, Logging}
 import com.bartender.bot.service.domain.{Message, Recipient}
@@ -14,21 +13,22 @@ class FbMessengerService(receiver: MessageReceiver) extends Directives with Json
       }
     } ~
       post {
-        entity(as[FbMessengerHookBody]) { hookBody =>
-          rootLogger.info(s"$hookBody")
-          val userMessage = hookBody.entry.last.messaging.last.message
+        extractRequestEntity { response =>
+          rootLogger.info(s"$response") // it more usefull for log now todo late we can delete it
 
-          if (userMessage.isDefined) {
-            val messageTextOption = userMessage.get.text
-            if (messageTextOption.isDefined) {
-              val message = Message(messageTextOption.get)
-              val recipient = Recipient(hookBody.entry.last.messaging.last.sender.id)
+          entity(as[FbMessengerHookBody]) { hookBody =>
+            if (hookBody.`object` matches "page") hookBody.entry.foreach(
+              //just text message for first time todo support all message type
+              _.messaging.filter(fbMessaging => fbMessaging.message.isDefined && fbMessaging.message.get.text.isDefined)
+                .map(messaging => (messaging.message.get, messaging.sender.id))
+                .foreach { fbMessage =>
+                  val message = Message(fbMessage._1.text.get)
+                  val recipient = Recipient(fbMessage._2)
+                  receiver.Receive(message, recipient)
+                })
 
-              receiver.Receive(message, recipient)
-            }
+            complete("Success")
           }
-
-          complete("Ok")
         }
 
       }
