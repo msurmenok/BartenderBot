@@ -22,7 +22,11 @@ class MessageReceiverImpl(sender: MessageSender, dao: Dao,
 
   override def receiveNearestBars(location: Location, recipient: Recipient): Unit = {
     // TODO: send message with attachment
-    barResearcher.findNearestBars(location).map(bar => Message(s"${bar.name}: ${bar.photoUrl.getOrElse("")}"))
-      .foreach(message => sender.SendMessage(message, recipient))
+    val message = Message(barResearcher.findNearestBars(location).
+      take(3)
+      .map(_.name)
+      .mkString("Nearest bars: ", ", ", "."))
+
+    sender.SendMessage(message, recipient)
   }
 }
