@@ -53,7 +53,7 @@ case class FbPayload(url: Option[String] = None,
                      //  buttons: Option[Seq[Button]] = None
                   )
 
-case class FbCoordinates(lat: Long, long: Long)
+case class FbCoordinates(lat: Double, long: Double)
 
 object FbTemplateType extends Enumeration {
   type EnumA = Value

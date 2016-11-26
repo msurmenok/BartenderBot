@@ -18,4 +18,6 @@ trait Config {
   val infoRoute = routes.getString("info")
 
   val fbSendApiUrl = config.getConfig("fb_send_api").getString("url")
+
+  val googlePlacesApiConf = config.getConfig("google_places_api")
 }

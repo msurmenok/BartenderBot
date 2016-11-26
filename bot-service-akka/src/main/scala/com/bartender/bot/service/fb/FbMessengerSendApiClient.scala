@@ -10,7 +10,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 
-object FbMessengerSendApiClient extends JsonSupport with Config with Logging {
+class FbMessengerSendApiClient extends FbJsonSupport with Config with Logging {
 
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()

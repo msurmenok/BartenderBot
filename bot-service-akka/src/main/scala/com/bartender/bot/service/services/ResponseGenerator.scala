@@ -14,10 +14,10 @@ class SimpleResponseGenerator extends ResponseGenerator {
   val DRUNK_MESSAGE = Message("Are you drunk ? ;)")
   val WANT_DRINK_QUESTION = Message("Do you want something to drink?")
   val NAME_QUESTION = Message("What is your name?")
-  val INFO_MESSAGE = Message("I can help you to find best bar. " +
+  val INFO_MESSAGE = Message("I can help you to find nearest bar: just send me your location. " +
     "However, if you wanna create home party, I'll know a lot of cocktail's receipts ;)")
   val IF_YOU_NOT_DRINK_INFO_MESSAGE = Message("I guess you don't wanna drink. " +
-    "But I know also a lot of best restaurants whit very testy food and no-alcoholic cocktail's receipts ;)")
+    "But I know also a lot of best restaurants with very testy food and no-alcoholic cocktail's receipts ;)")
 
   def generateResponse(recipientMessage: Message,
                        recipientInfo: Option[RecipientInfo]): RecipientInfo = {
@@ -73,7 +73,7 @@ class SimpleResponseGenerator extends ResponseGenerator {
   private def getMeetingMessage(recipientName: Option[String], info: RecipientInfo) = {
     val meetingMessageText = recipientName match {
       case None => "OK B-)"
-      case _ => s"Nice to meet you ${recipientName.get}. I’m “Bartender"
+      case _ => s"Nice to meet you ${recipientName.get}. I’m Bartender"
     }
     val infoMessage = createInfoMessage(info)
 

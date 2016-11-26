@@ -2,10 +2,10 @@ package com.bartender.bot.service.fb
 
 import akka.http.scaladsl.server.{Directives, StandardRoute, ValidationRejection}
 import com.bartender.bot.service.common.{Config, Logging}
-import com.bartender.bot.service.domain.{Message, Recipient}
+import com.bartender.bot.service.domain.{Location, Message, Recipient}
 import com.bartender.bot.service.services.MessageReceiver
 
-class FbMessengerService(receiver: MessageReceiver) extends Directives with JsonSupport with Config with Logging {
+class FbMessengerService(receiver: MessageReceiver) extends Directives with FbJsonSupport with Config with Logging {
   val route = path(fbMessengerWebhook) {
     get {
       parameters("hub.mode", "hub.verify_token" ?, "hub.challenge" ?) {
@@ -19,12 +19,23 @@ class FbMessengerService(receiver: MessageReceiver) extends Directives with Json
           entity(as[FbMessengerHookBody]) { hookBody =>
             if (hookBody.`object` matches "page") hookBody.entry.foreach(
               //just text message for first time todo support all message type
-              _.messaging.filter(fbMessaging => fbMessaging.message.isDefined && fbMessaging.message.get.text.isDefined)
+              _.messaging.filter(fbMessaging => fbMessaging.message.isDefined)
                 .map(messaging => (messaging.message.get, messaging.sender.id))
                 .foreach { fbMessage =>
-                  val message = Message(fbMessage._1.text.get)
+                  val message = fbMessage._1
                   val recipient = Recipient(fbMessage._2)
-                  receiver.Receive(message, recipient)
+
+                  val coordinates = message.attachments.map { attachments =>
+                    attachments.find(_.`type` == FbAttachmentType.location)
+                      .map(_.payload.coordinates).getOrElse(None)
+                  }.getOrElse(None)
+
+                  if (coordinates.isDefined) {
+                    val location = Location(coordinates.get.lat, coordinates.get.long)
+                    receiver.receiveNearestBars(location, recipient)
+                  } else if (message.text.isDefined) {
+                    receiver.Receive(Message(message.text.get), recipient)
+                  }
                 })
 
             complete("Success")

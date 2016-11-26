@@ -5,21 +5,26 @@ import akka.http.scaladsl.server.ValidationRejection
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.util.ByteString
 import com.bartender.bot.service.common.Config
-import com.bartender.bot.service.domain.{Message, Recipient}
-import com.bartender.bot.service.fb.{FbMessengerService, JsonSupport}
+import com.bartender.bot.service.domain.{Location, Message, Recipient}
+import com.bartender.bot.service.fb.{FbJsonSupport, FbMessengerService}
 import com.bartender.bot.service.services.MessageReceiver
 import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
 
-
+// TODO: use mockito
 class MessageReceiverStub extends MessageReceiver {
   var text: String = _
+  var nearestBar: Boolean = false
 
-  override def Receive(message: Message, recipient: Recipient) {
+  def Receive(message: Message, recipient: Recipient) {
     this.text = message.text
+  }
+
+  def receiveNearestBars(location: Location, recipient: Recipient) {
+    nearestBar = true
   }
 }
 
-class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteTest with JsonSupport with Config  with BeforeAndAfterEach {
+class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteTest with FbJsonSupport with Config  with BeforeAndAfterEach {
 
   var receiver: MessageReceiverStub = _
   var fbMessengerService: FbMessengerService = _
@@ -68,7 +73,7 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
       val requestEntity = HttpEntity(MediaTypes.`application/json`, locationMessageRequest)
       Post(webhookPath, requestEntity) ~> fbMessengerService.route ~> check {
         status.isSuccess() shouldEqual true
-        //todo check receive not not implement
+        receiver.nearestBar shouldEqual true
       }
     }
 

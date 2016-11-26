@@ -3,7 +3,7 @@ package com.bartender.bot.service.fb
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import spray.json.{DefaultJsonProtocol, DeserializationException, JsString, JsValue, RootJsonFormat}
 
-trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
+trait FbJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
 
   implicit object AttachmentTypeFormat extends RootJsonFormat[FbAttachmentType.Value] { //todo: maybe possible create common method for parse enum
   def write(obj: FbAttachmentType.Value): JsValue = JsString(obj.toString)
