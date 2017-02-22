@@ -23,15 +23,27 @@ trait FbJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
     }
   }
 
+  implicit object FbTemplateButtonsTypeFormat extends RootJsonFormat[FbTemplateButtonsType.Value] { //todo: maybe possible create common method for parse enum
+  def write(obj: FbTemplateButtonsType.Value): JsValue = JsString(obj.toString)
+
+    def read(json: JsValue): FbTemplateButtonsType.Value = json match {
+      case JsString(str) => FbTemplateButtonsType.withName(str)
+      case _ => throw DeserializationException("Enum string expected")
+    }
+  }
+
   implicit val coordinates = jsonFormat2(FbCoordinates)
-  implicit val payloadFormat = jsonFormat5(FbPayload)
+  implicit val fbTemplateButtonsFormat = jsonFormat4(FbTemplateButtons)
+  implicit val fbTemplateElementsFormat = jsonFormat4(FbTemplateElement)
+  implicit val payloadFormat = jsonFormat7(FbPayload)
   implicit val attachmentFormat = jsonFormat2(FbAttachment)
   implicit val quickReplyResponseFormat = jsonFormat1(FbQuickReplyResponse)
   implicit val messageFormat = jsonFormat6(FbMessage)
   implicit val serviceMessageFormat = jsonFormat3(FbServiceMessage)
+  implicit val fbButtonPostbackFormat = jsonFormat1(FbButtonPostback)
   implicit val recipientFormat = jsonFormat1(FbRecipient)
   implicit val senderFormat = jsonFormat1(FbSender)
-  implicit val messagingFormat = jsonFormat6(FbMessaging)
+  implicit val messagingFormat = jsonFormat7(FbMessaging)
   implicit val entryFormat = jsonFormat3(FbEntry)
   implicit val fbMessengerResponseFormat = jsonFormat2(FbMessengerHookBody)
 

@@ -17,6 +17,7 @@ class GooglePlacesClient extends GooglePlacesJsonSupport with Config with Loggin
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
 
+  val placeDetailsUrl = googlePlacesApiConf.getString("placedetail_url")
   val nearbySearchUrl = googlePlacesApiConf.getString("nearbysearch_url")
   val photoUrl = googlePlacesApiConf.getString("photo_url")
   val apiKey = googlePlacesApiConf.getString("api_key")
@@ -37,6 +38,25 @@ class GooglePlacesClient extends GooglePlacesJsonSupport with Config with Loggin
     } else {
       None
     }
+  }
+
+  def details(placeId: String): Option[GPDetailResponse] = {
+    rootLogger.info(s"request place details ($placeId)")
+
+    val httpRequest = HttpRequest(method = HttpMethods.GET,
+      uri = s"$placeDetailsUrl?placeid=$placeId&key=$apiKey")
+    val fResponse = Http().singleRequest(httpRequest)
+    val response = Await.result(fResponse, Duration.Inf)
+
+    rootLogger.info(s"response status: ${response.status}")
+
+    if (response.status.isSuccess()) {
+      val result = Some(Await.result(Unmarshal(response.entity).to[GPDetailResponse], Duration.Inf))
+      result
+    } else {
+      None
+    }
+
   }
 
   def getPhotoUrl(headOption: Option[GPPhotos]): Option[String] = {

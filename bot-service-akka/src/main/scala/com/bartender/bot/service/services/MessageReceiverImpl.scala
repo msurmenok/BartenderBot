@@ -1,12 +1,12 @@
 package com.bartender.bot.service.services
 
-import com.bartender.bot.service.domain.{Location, Message, Recipient, RecipientInfo}
+import com.bartender.bot.service.domain.{Bar, Location, Message, Recipient}
 
 class MessageReceiverImpl(sender: MessageSender, dao: Dao,
                           responseGenerator: ResponseGenerator,
                           barResearcher: BarResearcher) extends MessageReceiver {
 
-  override def Receive(message: Message, recipient: Recipient) {
+  override def receive(message: Message, recipient: Recipient) {
 
     dao.saveRecipientMessage(message)
 
@@ -17,16 +17,32 @@ class MessageReceiverImpl(sender: MessageSender, dao: Dao,
     dao.saveResponse(updatedRecipientInfo.lastResponse)
     dao.saveOrUpdateRecipientInfo(recipient, updatedRecipientInfo)
 
-    sender.SendMessage(updatedRecipientInfo.lastResponse, recipient)
+    sender.sendMessage(updatedRecipientInfo.lastResponse, recipient)
   }
 
-  override def receiveNearestBars(location: Location, recipient: Recipient): Unit = {
-    // TODO: send message with attachment
-    val message = Message(barResearcher.findNearestBars(location).
-      take(3)
-      .map(_.name)
-      .mkString("Nearest bars: ", ", ", "."))
+  override def receiveNearestBar(location: Location, recipient: Recipient, offset: Int = 0): Option[Bar] = {
 
-    sender.SendMessage(message, recipient)
+    val bars = barResearcher.findNearestBars(location)
+
+    if (bars.isEmpty) {
+      sender.sendMessage(Message("Can't find nearest bars :( You're in a hole! Go away from there!"), recipient)
+      None
+    } else if (offset >= bars.size) {
+      sender.sendMessage(Message("Can't find one more nearest bars :( Сhoose from a previous!"), recipient)
+      None
+    } else {
+      val newOffset = offset + 1
+      val nearestBar = bars.drop(offset).head
+      sender.sendNearestBar(nearestBar, recipient, location, newOffset)
+      Some(nearestBar)
+    }
+
+  }
+
+  override def receiveBarDetails(barId: String, recipient: Recipient): Unit = {
+    barResearcher.getBarDetails(barId) match {
+      case Some(details) => sender.sendBarDetails(details, recipient)
+      case None => sender.sendMessage(Message("I look everywhere, really! Nothing can't find!"), recipient)
+    }
   }
 }

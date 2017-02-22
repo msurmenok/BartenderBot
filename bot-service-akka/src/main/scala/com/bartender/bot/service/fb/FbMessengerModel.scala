@@ -9,7 +9,8 @@ case class FbMessaging(sender: FbSender,
                        timestamp: Long,
                        message: Option[FbMessage] = None,
                        delivery: Option[FbServiceMessage] = None,
-                       read: Option[FbServiceMessage] = None)
+                       read: Option[FbServiceMessage] = None,
+                       postback: Option[FbButtonPostback] = None)
 
 case class FbSender(id: String)
 
@@ -23,7 +24,10 @@ case class FbMessage(mid: String,
                      metadata: Option[String] = None)
 
 case class FbQuickReplyResponse(payload: String)
+
 case class FbServiceMessage(watermark: Long, seq: Long, mids: Option[Seq[String]])
+
+case class FbButtonPostback(payload: String)
 
 case class QuickReplyResponse(payload: String)
 
@@ -42,16 +46,16 @@ object FbAttachmentType extends Enumeration {
   * @param is_reusable   - set true for optimisation send a lot of same attachment
   * @param attachment_id - after use is_reusable == true, you will have it parament for optimisation
   * @param coordinates   - for attachment type: location (just for response in webhook)
-  *
-  *                      // template (just for send API)
+  * @param template_type - just for send API
+  * @param elements      - for template type list and generic
   */
 case class FbPayload(url: Option[String] = None,
                      is_reusable: Option[Boolean] = None,
                      attachment_id: Option[String] = None,
                      coordinates: Option[FbCoordinates] = None,
-                     template_type: Option[FbTemplateType.Value] = None
-                     //  buttons: Option[Seq[Button]] = None
-                  )
+                     template_type: Option[FbTemplateType.Value] = None,
+                     elements: Option[Seq[FbTemplateElement]] = None,
+                     buttons: Option[Seq[FbTemplateButtons]] = None)
 
 case class FbCoordinates(lat: Double, long: Double)
 
@@ -60,12 +64,20 @@ object FbTemplateType extends Enumeration {
   val generic, button, list = Value
 }
 
-//case class Button(   "type":"web_url",
-//"url":"https://petersapparel.parseapp.com",
-//"title":"Show Website")
+case class FbTemplateElement(title: String,
+                             image_url: Option[String] = None,
+                             subtitle: Option[String] = None,
+                             buttons: Seq[FbTemplateButtons] = Seq.empty)
 
-//web_url, postback or phone_number
+case class FbTemplateButtons(`type`: FbTemplateButtonsType.Value,
+                             title: String,
+                             payload: Option[String] = None,
+                             url: Option[String] = None)
 
+object FbTemplateButtonsType extends Enumeration {
+  type EnumA = Value
+  val postback, web_url, phone_number = Value
+}
 
 /** * request models for send API FA Messenger ***/
 

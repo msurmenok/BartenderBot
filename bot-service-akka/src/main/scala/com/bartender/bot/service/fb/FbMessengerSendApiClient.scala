@@ -23,6 +23,26 @@ class FbMessengerSendApiClient extends FbJsonSupport with Config with Logging {
     rootLogger.info(s"${response.entity}")
   }
 
+  def sendTemplateMessage(recipient: FbRecipient, elements: FbTemplateElement*): Unit = {
+    rootLogger.info(s"sending template message to recipient(${recipient.id})")
+    val payload = FbPayload(elements = Some(elements), template_type = Some(FbTemplateType.generic))
+    val attachment = FbAttachment(FbAttachmentType.template, payload = payload)
+    val body = FbMessengerRequest(recipient, Some(FbSendMessage(attachment = Some(attachment))))
+    val response = sendFbMessengerRequest(body)
+    rootLogger.info(s"result message sending: ${response.status}")
+    rootLogger.info(s"${response.entity}")
+  }
+
+  def sendListTemplateMessage(recipient: FbRecipient, elements: Seq[FbTemplateElement], buttons: Option[Seq[FbTemplateButtons]]): Unit = {
+    rootLogger.info(s"sending list template message to recipient(${recipient.id})")
+    val payload = FbPayload(elements = Some(elements), buttons = buttons, template_type = Some(FbTemplateType.list))
+    val attachment = FbAttachment(FbAttachmentType.template, payload = payload)
+    val body = FbMessengerRequest(recipient, Some(FbSendMessage(attachment = Some(attachment))))
+    val response = sendFbMessengerRequest(body)
+    rootLogger.info(s"result message sending: ${response.status}")
+    rootLogger.info(s"${response.entity}")
+  }
+
   private def sendFbMessengerRequest(body: FbMessengerRequest): HttpResponse = {
     val httpRequest = HttpRequest(method = HttpMethods.POST, uri = fbSendApiUrl,
       entity = HttpEntity(ContentTypes.`application/json`, fbMessengerRequestFormat.write(body).compactPrint))

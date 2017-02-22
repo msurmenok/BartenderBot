@@ -21,6 +21,11 @@ trait GooglePlacesJsonSupport extends SprayJsonSupport with DefaultJsonProtocol 
   implicit val gpGeometry = jsonFormat1(GPGeometry)
   implicit val gpOpeningHours = jsonFormat1(GPOpeningHours)
   implicit val gpPhotos = jsonFormat3(GPPhotos)
+  implicit val gpAddressComponents = jsonFormat3(GPAddressComponents)
+  implicit val gpAspects = jsonFormat2(GPAspects)
+  implicit val gpReview = jsonFormat7(GPReview)
   implicit val gpResult = jsonFormat14(GPResult)
+  implicit val gpDetailResult = jsonFormat21(GPDetailResult)
+  implicit val gpGPDetailResponse = jsonFormat3(GPDetailResponse)
   implicit val gpResponse = jsonFormat3(GPResponse)
 }

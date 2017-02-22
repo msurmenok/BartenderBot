@@ -1,9 +1,11 @@
 package com.bartender.bot.service.services
 
-import com.bartender.bot.service.domain.{Location, Message, Recipient}
+import com.bartender.bot.service.domain.{Bar, Location, Message, Recipient}
 
 trait MessageReceiver {
-  def Receive(message: Message, recipient: Recipient)
+  def receive(message: Message, recipient: Recipient)
 
-  def receiveNearestBars(location: Location, recipient: Recipient)
+  def receiveNearestBar(location: Location, recipient: Recipient, offset: Int = 0): Option[Bar]
+
+  def receiveBarDetails(barId: String, recipient: Recipient)
 }

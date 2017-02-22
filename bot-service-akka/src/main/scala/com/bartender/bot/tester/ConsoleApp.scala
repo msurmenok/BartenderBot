@@ -1,6 +1,6 @@
 package com.bartender.bot.tester
 
-import com.bartender.bot.service.domain.{Location, Message, Recipient}
+import com.bartender.bot.service.domain.{Bar, Location, Message, Recipient}
 import com.bartender.bot.service.services.{GoogleBarResearcher, MemoryDao, MessageReceiverImpl, SimpleResponseGenerator}
 
 object ConsoleApp {
@@ -17,14 +17,27 @@ object ConsoleApp {
     println("Welcome!")
     println("For searching nearest bars input coordinate as \"l{latitude},{longitude}\"")
 
-    while(true) {
+    var coordinates: Option[Location] = None
+    var lastBar: Option[Bar] = None
+    var offset = 0
+    while (true) {
       val input = scala.io.StdIn.readLine()
-      if(input matches patternLocation){
-        val coordinates = input.substring(1).split(",")
-        receiver.receiveNearestBars(Location(lat = coordinates(0).toDouble, lng = coordinates(1).toDouble), recipient)
-      }else{
+      if (input matches patternLocation) {
+        val args = input.substring(1).split(",")
+        coordinates = Some(Location(lat = args(0).toDouble, lng = args(1).toDouble))
+        lastBar = receiver.receiveNearestBar(coordinates.get, recipient, offset)
+      } else if (coordinates.isDefined && input.equals("next")) {
+        offset += 1
+        lastBar = receiver.receiveNearestBar(coordinates.get, recipient, offset)
+      } else if (lastBar.isDefined && input.equals("details")) {
+        receiver.receiveBarDetails(lastBar.get.id, recipient)
+        lastBar = None
+      } else {
+        coordinates = None
+        lastBar = None
+        offset = 0
         val message = Message(input)
-        receiver.Receive(message, recipient)
+        receiver.receive(message, recipient)
       }
     }
   }

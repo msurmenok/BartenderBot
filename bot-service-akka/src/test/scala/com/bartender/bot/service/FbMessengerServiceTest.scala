@@ -14,13 +14,18 @@ import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
 class MessageReceiverStub extends MessageReceiver {
   var text: String = _
   var nearestBar: Boolean = false
+  var barDetails: Boolean = false
 
-  def Receive(message: Message, recipient: Recipient) {
+  def receive(message: Message, recipient: Recipient) {
     this.text = message.text
   }
 
-  def receiveNearestBars(location: Location, recipient: Recipient) {
+  def receiveNearestBar(location: Location, recipient: Recipient, offset: Int): Unit ={
     nearestBar = true
+  }
+
+  def receiveBarDetails(barId: String, recipient: Recipient) {
+    barDetails = true
   }
 }
 
