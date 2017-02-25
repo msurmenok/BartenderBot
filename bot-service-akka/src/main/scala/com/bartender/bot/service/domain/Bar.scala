@@ -11,5 +11,8 @@ case class BarDetails(website: Option[String],
                       rating: Option[Double],
                       priceLevel: Option[Int],
                       phoneNumber: Option[String],
-                      reviews: Seq[String])
+                      extraPhotoUrl: Option[String],
+                      reviews: Seq[BarReview])
+
+case class BarReview(author: String, text: String)
 

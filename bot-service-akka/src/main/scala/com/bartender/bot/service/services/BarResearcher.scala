@@ -1,6 +1,6 @@
 package com.bartender.bot.service.services
 
-import com.bartender.bot.service.domain.{Bar, BarDetails, Location}
+import com.bartender.bot.service.domain.{Bar, BarDetails, BarReview, Location}
 import com.bartender.bot.service.google.{GPType, GooglePlacesClient}
 
 import scala.collection.mutable
@@ -61,7 +61,8 @@ class GoogleBarResearcher(val googlePlacesClient: GooglePlacesClient = new Googl
           placeDetail.rating,
           placeDetail.price_level,
           placeDetail.international_phone_number,
-          placeDetail.reviews.map(_.map(_.text)).getOrElse(Seq.empty))
+          googlePlacesClient.getPhotoUrl(placeDetail.photos.getOrElse(Seq.empty).lastOption),
+          placeDetail.reviews.map(_.map(review => BarReview(review.author_name, review.text))).getOrElse(Seq.empty))
         barDetails += barId -> details
         details
       }

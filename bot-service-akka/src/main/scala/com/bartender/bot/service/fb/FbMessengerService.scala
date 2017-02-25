@@ -19,7 +19,7 @@ class FbMessengerService(receiver: MessageReceiver) extends Directives with FbJs
           entity(as[FbMessengerHookBody]) { hookBody =>
             if (hookBody.`object` matches "page") hookBody.entry.foreach(
               _.messaging.foreach { messaging =>
-                val recipient = Recipient(messaging.recipient.id)
+                val recipient = Recipient(messaging.sender.id)
                 if (messaging.message.isDefined) {
                   val message = messaging.message.get
                   val coordinates = message.attachments.map { attachments =>

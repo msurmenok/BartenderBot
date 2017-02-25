@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.ValidationRejection
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.util.ByteString
 import com.bartender.bot.service.common.Config
-import com.bartender.bot.service.domain.{Location, Message, Recipient}
+import com.bartender.bot.service.domain.{Bar, Location, Message, Recipient}
 import com.bartender.bot.service.fb.{FbJsonSupport, FbMessengerService}
 import com.bartender.bot.service.services.MessageReceiver
 import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
@@ -20,9 +20,11 @@ class MessageReceiverStub extends MessageReceiver {
     this.text = message.text
   }
 
-  def receiveNearestBar(location: Location, recipient: Recipient, offset: Int): Unit ={
+  def receiveNearestBar(location: Location, recipient: Recipient, offset: Int): Option[Bar] ={
     nearestBar = true
+    Some(Bar("id", "name", Some("address"), Some("photoUrl"), location))
   }
+
 
   def receiveBarDetails(barId: String, recipient: Recipient) {
     barDetails = true
@@ -87,6 +89,22 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
       Post(webhookPath, requestEntity) ~> fbMessengerService.route ~> check {
         status.isSuccess() shouldEqual true
         receiver.text shouldEqual "hello, world!"
+      }
+    }
+
+    "receive postback show new nearest bar" in {
+      val requestEntity = HttpEntity(MediaTypes.`application/json`, postShowNextNearestBar)
+      Post(webhookPath, requestEntity) ~> fbMessengerService.route ~> check {
+        status.isSuccess() shouldEqual true
+        receiver.nearestBar shouldEqual true
+      }
+    }
+
+    "receive postback details bar" in {
+      val requestEntity = HttpEntity(MediaTypes.`application/json`, postBackBarDetails)
+      Post(webhookPath, requestEntity) ~> fbMessengerService.route ~> check {
+        status.isSuccess() shouldEqual true
+        receiver.barDetails shouldEqual true
       }
     }
 
@@ -188,7 +206,7 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                 {
                   "type":"location",
                   "payload":{
-                    "coordinates":{"lat":0,"long":0}
+                    "coordinates":{"lat":55.695738,"long":37.624188}
                   }
                 }
               ]
@@ -227,21 +245,77 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
         ]
       }""".stripMargin)
 
+
+  val postShowNextNearestBar = ByteString(
+    """
+      |{
+      |   "object":"page",
+      |   "entry":[
+      |      {
+      |         "id":"PAGE_ID",
+      |         "time":1479158759114,
+      |         "messaging":[
+      |            {
+      |               "sender":{
+      |                  "id":"USER_ID"
+      |               },
+      |               "recipient":{
+      |                  "id":"PAGE_ID"
+      |               },
+      |               "timestamp":0,
+      |               "postback":{
+      |                  "payload":"Show one more;13.732900;100.562810;1"
+      |               }
+      |            }
+      |         ]
+      |      }
+      |   ]
+      |}
+      |    """.stripMargin)
+
+
+  val postBackBarDetails = ByteString(
+    """
+      {
+      |   "object":"page",
+      |   "entry":[
+      |      {
+      |         "id":"PAGE_ID",
+      |         "time":1479158759114,
+      |         "messaging":[
+      |            {
+      |               "sender":{
+      |                  "id":"USER_ID"
+      |               },
+      |               "recipient":{
+      |                  "id":"PAGE_ID"
+      |               },
+      |               "timestamp":0,
+      |               "postback":{
+      |                  "payload":"Details;ChIJN1t_tDeuEmsRUsoyG83frY4"
+      |               }
+      |            }
+      |         ]
+      |      }
+      |   ]
+      |}
+      |    """.stripMargin)
+
   val request1 = ByteString(
     """
       |{
       |   "object":"page",
       |   "entry":[
       |      {
-      |         "id":"711000899065163",
+      |         "id":"PAGE_ID",
       |         "time":1479158759114,
       |         "messaging":[
       |            {
       |               "sender":{
-      |                  "id":"1009874889121035"
+      |                  "id":"USER_ID"
       |               },
       |               "recipient":{
-      |                  "id":"711000899065163"
+      |                  "id":"PAGE_ID"
       |               },
       |               "timestamp":0,
       |               "delivery":{
@@ -264,15 +338,15 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
          "object":"page",
          "entry":[
             {
-               "id":"711000899065163",
+               "id":"PAGE_ID",
                "time":1479158760373,
                "messaging":[
                   {
                      "sender":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "recipient":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "timestamp":1479148108302,
                      "read":{
@@ -282,10 +356,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "recipient":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "timestamp":1479148118031,
                      "message":{
@@ -296,10 +370,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "recipient":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "timestamp":1479148150367,
                      "message":{
@@ -310,10 +384,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "recipient":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "timestamp":1479148373753,
                      "message":{
@@ -324,10 +398,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "recipient":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "timestamp":0,
                      "delivery":{
@@ -340,10 +414,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "recipient":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "timestamp":1479148529054,
                      "message":{
@@ -356,10 +430,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "recipient":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "timestamp":0,
                      "delivery":{
@@ -372,10 +446,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "recipient":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "timestamp":1479148533772,
                      "message":{
@@ -388,10 +462,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "recipient":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "timestamp":0,
                      "delivery":{
@@ -404,10 +478,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "recipient":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "timestamp":1479148537513,
                      "message":{
@@ -420,10 +494,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "recipient":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "timestamp":0,
                      "delivery":{
@@ -436,10 +510,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "recipient":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "timestamp":1479148938164,
                      "message":{
@@ -452,10 +526,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "recipient":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "timestamp":1479148942697,
                      "message":{
@@ -468,10 +542,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "recipient":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "timestamp":0,
                      "delivery":{
@@ -485,10 +559,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "recipient":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "timestamp":0,
                      "delivery":{
@@ -502,10 +576,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "recipient":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "timestamp":1479149752342,
                      "read":{
@@ -515,10 +589,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "recipient":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "timestamp":1479149756326,
                      "message":{
@@ -529,10 +603,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "recipient":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "timestamp":1479149764543,
                      "message":{
@@ -543,10 +617,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "recipient":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "timestamp":1479150026149,
                      "message":{
@@ -557,10 +631,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "recipient":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "timestamp":1479150207879,
                      "message":{
@@ -572,10 +646,10 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
                   },
                   {
                      "sender":{
-                        "id":"1009874889121035"
+                        "id":"USER_ID"
                      },
                      "recipient":{
-                        "id":"711000899065163"
+                        "id":"PAGE_ID"
                      },
                      "timestamp":0,
                      "delivery":{

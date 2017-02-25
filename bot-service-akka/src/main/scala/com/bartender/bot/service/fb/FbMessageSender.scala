@@ -10,6 +10,8 @@ class FbMessageSender(val fbMessengerSendApiClient: FbMessengerSendApiClient = n
 
   val max_message_leght = 320
   val max_templete_text_leght = 80
+  val max_list_template_elements_count = 4
+  val min_list_template_elements_count = 2
 
   def sendMessage(message: Message, recipient: Recipient): Unit = {
     val text = if (message.text.length() > max_message_leght) {
@@ -28,42 +30,40 @@ class FbMessageSender(val fbMessengerSendApiClient: FbMessengerSendApiClient = n
       title = bar.name,
       subtitle = bar.address,
       image_url = bar.photoUrl,
-      buttons = buttons)
+      buttons = Some(buttons))
 
     fbMessengerSendApiClient.sendTemplateMessage(FbRecipient(recipient.id), element)
   }
 
   def sendBarDetails(barDetails: BarDetails, recipient: Recipient): Unit = {
-    val ratingAndPriceTitle = s"rating: ${barDetails.rating.map(_.toString).getOrElse("-")}," +
-      s" price level: ${priceLevelToStr(barDetails.priceLevel)}"
-    val titles = new ListBuffer[String]
-    titles += ratingAndPriceTitle
-    if (barDetails.reviews.nonEmpty) {
-      titles += "Reviews: "
-      titles ++= barDetails.reviews
+
+    val templates = new ListBuffer[FbTemplateElement]()
+    templates += FbTemplateElement(
+      title = s"Rating: ${barDetails.rating.map(_.toString).getOrElse("-")}",
+      subtitle = Some(s"Price level: ${priceLevelToStr(barDetails.priceLevel)}"),
+      image_url = barDetails.extraPhotoUrl,
+      default_action = barDetails.website.map(url => FbTemplateElementDefaultAction(url = url)))
+
+    if (barDetails.reviews.isEmpty) {
+      templates += FbTemplateElement("Reviews", subtitle = Some("empty"))
+    } else {
+      templates ++= barDetails.reviews.take(max_list_template_elements_count - templates.length)
         .map { review =>
           val preffix = "  - "
           val max_text_leght = max_templete_text_leght - preffix.length
-          if (review.length() > max_text_leght) {
+          if (review.text.length() > max_text_leght) {
             val dots = "..."
-            preffix + review.substring(0, max_text_leght - dots.length - 1) + dots
+            (review.author, preffix + review.text.substring(0, max_text_leght - dots.length - 1) + dots)
           } else {
-            preffix + review
+            (review.author, preffix + review)
           }
-        }
+        }.map(title => FbTemplateElement(title._1, subtitle = Some(title._2)))
     }
 
-    val buttons = new ListBuffer[FbTemplateButtons]
-    if (barDetails.website.nonEmpty) {
-      buttons += FbTemplateButtons(FbTemplateButtonsType.web_url, title = "Go to website", url = Some(barDetails.website.get))
-    }
-
-    if (barDetails.phoneNumber.nonEmpty) {
-      buttons += FbTemplateButtons(FbTemplateButtonsType.phone_number, title = "Call to bar", payload = Some(barDetails.phoneNumber.get))
-    }
-
-    fbMessengerSendApiClient.sendListTemplateMessage(FbRecipient(recipient.id),
-      titles.map(title => FbTemplateElement(title)),
-      if (buttons.isEmpty) None else Some(buttons.toList))
+    fbMessengerSendApiClient.sendListTemplateMessage(
+      FbRecipient(recipient.id),
+      templates.toList,
+      barDetails.phoneNumber.map(phone =>
+        FbTemplateButton(FbTemplateButtonsType.phone_number, title = "Call to bar", payload = Some(phone))))
   }
 }

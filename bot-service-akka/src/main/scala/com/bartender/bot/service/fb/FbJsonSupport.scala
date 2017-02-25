@@ -32,10 +32,20 @@ trait FbJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
     }
   }
 
+  implicit object FbTopElementListTemplateTypeFormat extends RootJsonFormat[FbTopElementListTemplateType.Value] { //todo: maybe possible create common method for parse enum
+  def write(obj: FbTopElementListTemplateType.Value): JsValue = JsString(obj.toString)
+
+    def read(json: JsValue): FbTopElementListTemplateType.Value = json match {
+      case JsString(str) => FbTopElementListTemplateType.withName(str)
+      case _ => throw DeserializationException("Enum string expected")
+    }
+  }
+
   implicit val coordinates = jsonFormat2(FbCoordinates)
-  implicit val fbTemplateButtonsFormat = jsonFormat4(FbTemplateButtons)
-  implicit val fbTemplateElementsFormat = jsonFormat4(FbTemplateElement)
-  implicit val payloadFormat = jsonFormat7(FbPayload)
+  implicit val fbTemplateButtonsFormat = jsonFormat4(FbTemplateButton)
+  implicit val fbTemplateElementDefaultActionFormat = jsonFormat2(FbTemplateElementDefaultAction)
+  implicit val fbTemplateElementsFormat = jsonFormat5(FbTemplateElement)
+  implicit val payloadFormat = jsonFormat8(FbPayload)
   implicit val attachmentFormat = jsonFormat2(FbAttachment)
   implicit val quickReplyResponseFormat = jsonFormat1(FbQuickReplyResponse)
   implicit val messageFormat = jsonFormat6(FbMessage)

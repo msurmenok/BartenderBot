@@ -9,13 +9,13 @@ object FbActionButtons {
 
   private val ARG_DIVIDER = ";"
 
-  def barDetails(barId: String): FbTemplateButtons = {
-    FbTemplateButtons(FbTemplateButtonsType.postback, title = BAR_DETAILS,
+  def barDetails(barId: String): FbTemplateButton = {
+    FbTemplateButton(FbTemplateButtonsType.postback, title = BAR_DETAILS,
       payload = Some(s"$BAR_DETAILS$ARG_DIVIDER$barId"))
   }
 
-  def barShowNext(location: Location, offset: Int): FbTemplateButtons = {
-    FbTemplateButtons(FbTemplateButtonsType.postback, title = SHOW_NEXT_BAR,
+  def barShowNext(location: Location, offset: Int): FbTemplateButton = {
+    FbTemplateButton(FbTemplateButtonsType.postback, title = SHOW_NEXT_BAR,
       payload = Some(barShowNextPayloadToStr(location, offset)))
   }
 

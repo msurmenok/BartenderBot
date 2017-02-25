@@ -33,9 +33,13 @@ class FbMessengerSendApiClient extends FbJsonSupport with Config with Logging {
     rootLogger.info(s"${response.entity}")
   }
 
-  def sendListTemplateMessage(recipient: FbRecipient, elements: Seq[FbTemplateElement], buttons: Option[Seq[FbTemplateButtons]]): Unit = {
+  def sendListTemplateMessage(recipient: FbRecipient, elements: Seq[FbTemplateElement], button: Option[FbTemplateButton] = None): Unit = {
     rootLogger.info(s"sending list template message to recipient(${recipient.id})")
-    val payload = FbPayload(elements = Some(elements), buttons = buttons, template_type = Some(FbTemplateType.list))
+    val payload = FbPayload(
+      elements = Some(elements),
+      buttons = button.map(b => Seq(b)),
+      template_type = Some(FbTemplateType.list),
+      top_element_style = Some(FbTopElementListTemplateType.large))
     val attachment = FbAttachment(FbAttachmentType.template, payload = payload)
     val body = FbMessengerRequest(recipient, Some(FbSendMessage(attachment = Some(attachment))))
     val response = sendFbMessengerRequest(body)

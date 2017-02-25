@@ -42,12 +42,13 @@ object FbAttachmentType extends Enumeration {
 /** *
   * for attachment content in message
   *
-  * @param url           - use for attachment type - image, audio, video, file
-  * @param is_reusable   - set true for optimisation send a lot of same attachment
-  * @param attachment_id - after use is_reusable == true, you will have it parament for optimisation
-  * @param coordinates   - for attachment type: location (just for response in webhook)
-  * @param template_type - just for send API
-  * @param elements      - for template type list and generic
+  * @param url               - use for attachment type - image, audio, video, file
+  * @param is_reusable       - set true for optimisation send a lot of same attachment
+  * @param attachment_id     - after use is_reusable == true, you will have it parament for optimisation
+  * @param coordinates       - for attachment type: location (just for response in webhook)
+  * @param template_type     - just for send API
+  * @param top_element_style - just for list type template
+  * @param elements          - for template type list and generic
   */
 case class FbPayload(url: Option[String] = None,
                      is_reusable: Option[Boolean] = None,
@@ -55,24 +56,34 @@ case class FbPayload(url: Option[String] = None,
                      coordinates: Option[FbCoordinates] = None,
                      template_type: Option[FbTemplateType.Value] = None,
                      elements: Option[Seq[FbTemplateElement]] = None,
-                     buttons: Option[Seq[FbTemplateButtons]] = None)
+                     top_element_style: Option[FbTopElementListTemplateType.Value] = None,
+                     buttons: Option[Seq[FbTemplateButton]] = None)
 
 case class FbCoordinates(lat: Double, long: Double)
+
+object FbTopElementListTemplateType extends Enumeration {
+  type EnumA = Value
+  val large, compact = Value
+}
 
 object FbTemplateType extends Enumeration {
   type EnumA = Value
   val generic, button, list = Value
 }
 
+case class FbTemplateElementDefaultAction(`type`: FbTemplateButtonsType.Value = FbTemplateButtonsType.web_url,
+                                          url: String)
+
 case class FbTemplateElement(title: String,
                              image_url: Option[String] = None,
                              subtitle: Option[String] = None,
-                             buttons: Seq[FbTemplateButtons] = Seq.empty)
+                             default_action: Option[FbTemplateElementDefaultAction] = None,
+                             buttons: Option[Seq[FbTemplateButton]] = None)
 
-case class FbTemplateButtons(`type`: FbTemplateButtonsType.Value,
-                             title: String,
-                             payload: Option[String] = None,
-                             url: Option[String] = None)
+case class FbTemplateButton(`type`: FbTemplateButtonsType.Value,
+                            title: String,
+                            payload: Option[String] = None,
+                            url: Option[String] = None)
 
 object FbTemplateButtonsType extends Enumeration {
   type EnumA = Value
