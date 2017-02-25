@@ -20,7 +20,18 @@ class FbMessengerService(receiver: MessageReceiver) extends Directives with FbJs
             if (hookBody.`object` matches "page") hookBody.entry.foreach(
               _.messaging.foreach { messaging =>
                 val recipient = Recipient(messaging.sender.id)
-                if (messaging.message.isDefined) {
+                if (messaging.postback.isDefined) {
+                  val payload = messaging.postback.get.payload
+                  if (payload.startsWith(FbActionButtons.SHOW_NEXT_BAR)) {
+                    val args = FbActionButtons.getBarShowNextPayload(payload)
+                    receiver.receiveNearestBar(args._1, recipient, args._2)
+                  } else if (payload.startsWith(FbActionButtons.BAR_DETAILS)) {
+                    val barId = FbActionButtons.getBarDetailsPayload(payload)
+                    receiver.receiveBarDetails(barId, recipient)
+                  } else {
+                    rootLogger.debug(s"Don't understand posback payload: $payload")
+                  }
+                } else if (messaging.message.isDefined) {
                   val message = messaging.message.get
                   val coordinates = message.attachments.map { attachments =>
                     attachments.find(_.`type` == FbAttachmentType.location)
@@ -33,20 +44,9 @@ class FbMessengerService(receiver: MessageReceiver) extends Directives with FbJs
                   } else if (message.text.isDefined) {
                     receiver.receive(Message(message.text.get), recipient)
                   }
-                } else if (messaging.postback.isDefined) {
-                  val payload = messaging.postback.get.payload
-                  if (payload.startsWith(FbActionButtons.SHOW_NEXT_BAR)) {
-                    val args = FbActionButtons.getBarShowNextPayload(payload)
-                    receiver.receiveNearestBar(args._1, recipient, args._2)
-                  } else if (payload.startsWith(FbActionButtons.BAR_DETAILS)) {
-                    val barId = FbActionButtons.getBarDetailsPayload(payload)
-                    receiver.receiveBarDetails(barId, recipient)
-                  } else {
-                    receiver.receive(Message(s"Don't understand posback payload: $payload"), recipient)
-                  }
                 } else {
                   val typeEntity = messaging.delivery.map(_ => "delivery").getOrElse("") + messaging.read.map(_ => "read").getOrElse("")
-                  receiver.receive(Message(s"Not support entity $typeEntity type. Now support message and postback."), recipient)
+                  rootLogger.debug(s"Not support entity $typeEntity type. Now support message and postback.")
                 }
               })
 
