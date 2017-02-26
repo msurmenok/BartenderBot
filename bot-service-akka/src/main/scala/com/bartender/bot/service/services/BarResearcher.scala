@@ -3,31 +3,26 @@ package com.bartender.bot.service.services
 import com.bartender.bot.service.domain.{Bar, BarDetails, BarReview, Location}
 import com.bartender.bot.service.google.{GPType, GooglePlacesClient}
 
-import scala.collection.mutable
-
 trait BarResearcher {
   def getBarDetails(barId: String): Option[BarDetails]
 
   def findNearestBars(location: Location): Seq[Bar]
 }
 
-class GoogleBarResearcher(val googlePlacesClient: GooglePlacesClient = new GooglePlacesClient())
+class GoogleBarResearcher(val googlePlacesClient: GooglePlacesClient = new GooglePlacesClient(),
+                          val barDao: BarDao = new MemoryBarDao())
   extends BarResearcher {
-  val locationDateUpdate = mutable.HashMap[Location, Long]()
-  val barsByLocation = mutable.HashMap[Location, Seq[Bar]]()
-  val barDetails = mutable.HashMap[String, BarDetails]()
 
   def findNearestBars(location: Location): Seq[Bar] = {
-    val expired = locationDateUpdate.get(location).forall(milles => System.currentTimeMillis() - milles > 60 * 60 * 1000)
-    if (expired)
-      fromApi(location)
-    else
-      barsByLocation.getOrElse(location, fromApi(location))
-
+    barDao.getBarsByLocation(location).getOrElse {
+      val nearestBars = fromApi(location)
+      barDao.saveBarsByLocation(location, nearestBars)
+      nearestBars
+    }
   }
 
   private def fromApi(location: Location): Seq[Bar] = {
-    val bars = googlePlacesClient.nearbySearch(location = s"${location.lat},${location.lng}", types = GPType.bar.toString)
+    googlePlacesClient.nearbySearch(location = s"${location.lat},${location.lng}", types = GPType.bar.toString)
       .map(_.results).getOrElse(Seq.empty)
       .filter(_.opening_hours.exists(_.open_now))
       .sortBy(_.rating)(Ordering[Option[Double]].reverse)
@@ -38,16 +33,15 @@ class GoogleBarResearcher(val googlePlacesClient: GooglePlacesClient = new Googl
           place.vicinity,
           googlePlacesClient.getPhotoUrl(place.photos.getOrElse(Seq.empty).headOption),
           Location(place.geometry.location.lat, place.geometry.location.lng)))
-    locationDateUpdate += location -> System.currentTimeMillis()
-    barsByLocation += location -> bars
-    bars
   }
 
   def getBarDetails(barId: String): Option[BarDetails] = {
-    if (barDetails.contains(barId)) {
-      barDetails.get(barId)
-    } else {
-      fromApi(barId)
+    barDao.getBarDetails(barId) match {
+      case None => fromApi(barId).map { details =>
+        barDao.saveBarDetails(barId, details)
+        details
+      }
+      case _ => _
     }
   }
 
@@ -56,15 +50,13 @@ class GoogleBarResearcher(val googlePlacesClient: GooglePlacesClient = new Googl
       .map(_.result)
       .getOrElse(None)
       .map { placeDetail =>
-        val details = BarDetails(
+        BarDetails(
           placeDetail.website,
           placeDetail.rating,
           placeDetail.price_level,
           placeDetail.international_phone_number,
           googlePlacesClient.getPhotoUrl(placeDetail.photos.getOrElse(Seq.empty).lastOption),
           placeDetail.reviews.map(_.map(review => BarReview(review.author_name, review.text))).getOrElse(Seq.empty))
-        barDetails += barId -> details
-        details
       }
   }
 }
