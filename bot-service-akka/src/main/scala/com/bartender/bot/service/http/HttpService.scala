@@ -1,16 +1,17 @@
 package com.bartender.bot.service.http
 
 import akka.http.scaladsl.server.Directives._
+import com.bartender.bot.service.api.ai.ApiAiClient
 import com.bartender.bot.service.common.Config
 import com.bartender.bot.service.fb.{FbMessageSender, FbMessengerSendApiClient, FbMessengerService}
-import com.bartender.bot.service.services.{GoogleBarResearcher, MemoryDao, MessageReceiverImpl, SimpleResponseGenerator}
+import com.bartender.bot.service.services._
 
 
 object HttpService extends Config {
   // TODO: use dependency injection container here
   val sender = new FbMessageSender()
   val dao = new MemoryDao()
-  val responseGenerator = new SimpleResponseGenerator(dao)
+  val responseGenerator = new ApiAiResponseGenerator(new ApiAiClient())
   val barResearcher = new GoogleBarResearcher()
   val receiver = new MessageReceiverImpl(sender, responseGenerator, barResearcher)
   val fbMessengerService = new FbMessengerService(receiver)
