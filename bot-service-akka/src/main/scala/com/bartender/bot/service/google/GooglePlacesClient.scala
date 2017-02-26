@@ -17,9 +17,10 @@ class GooglePlacesClient extends GooglePlacesJsonSupport with Config with Loggin
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
 
-  val placeDetailsUrl = googlePlacesApiConf.getString("placedetail_url")
-  val nearbySearchUrl = googlePlacesApiConf.getString("nearbysearch_url")
-  val photoUrl = googlePlacesApiConf.getString("photo_url")
+  val baseUrl = googlePlacesApiConf.getString("base_url")
+  val placeDetailsUrl = baseUrl + googlePlacesApiConf.getString("place_detail_path")
+  val nearbySearchUrl = baseUrl + googlePlacesApiConf.getString("nearby_search_path")
+  val photoUrl = baseUrl + googlePlacesApiConf.getString("photo_path")
   val apiKey = googlePlacesApiConf.getString("api_key")
 
   def nearbySearch(location: String, types: String, radius: String = "1000"): Option[GPResponse] = {
