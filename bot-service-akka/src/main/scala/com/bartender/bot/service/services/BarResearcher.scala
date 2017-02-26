@@ -41,7 +41,7 @@ class GoogleBarResearcher(val googlePlacesClient: GooglePlacesClient = new Googl
         barDao.saveBarDetails(barId, details)
         details
       }
-      case _ => _
+      case Some(details) => Some(details)
     }
   }
 

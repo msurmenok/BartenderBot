@@ -20,4 +20,6 @@ trait Config {
   val fbSendApiUrl = config.getConfig("fb_send_api").getString("url")
 
   val googlePlacesApiConf = config.getConfig("google_places_api")
+
+  val apiApiConf = config.getConfig("api_ai")
 }

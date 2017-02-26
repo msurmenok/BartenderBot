@@ -10,8 +10,8 @@ object ConsoleApp {
     val sender = new ConsoleSender()
     val dao = new MemoryDao()
     val barResearcher = new GoogleBarResearcher()
-    val responseGenerator = new SimpleResponseGenerator()
-    val receiver = new MessageReceiverImpl(sender, dao, responseGenerator, barResearcher)
+    val responseGenerator = new SimpleResponseGenerator(dao)
+    val receiver = new MessageReceiverImpl(sender, responseGenerator, barResearcher)
     val recipient = Recipient("test_recipient")
 
     println("Welcome!")

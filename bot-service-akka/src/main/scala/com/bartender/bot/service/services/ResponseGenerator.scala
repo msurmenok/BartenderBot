@@ -1,14 +1,13 @@
 package com.bartender.bot.service.services
 
-import com.bartender.bot.service.domain.{Message, RecipientInfo}
+import com.bartender.bot.service.domain.{BotResponse, Message, Recipient, RecipientInfo}
 
 
 trait ResponseGenerator {
-  def generateResponse(recipientMessage: Message,
-                       recipientInfo: Option[RecipientInfo]): RecipientInfo
+  def generateResponse(recipientMessage: Message, recipient: Recipient): BotResponse
 }
 
-class SimpleResponseGenerator extends ResponseGenerator {
+class SimpleResponseGenerator(dao: Dao) extends ResponseGenerator {
 
   val GREETING_MESSAGE = Message("Hi, how are you?")
   val DRUNK_MESSAGE = Message("Are you drunk ? ;)")
@@ -19,9 +18,20 @@ class SimpleResponseGenerator extends ResponseGenerator {
   val IF_YOU_NOT_DRINK_INFO_MESSAGE = Message("I guess you don't wanna drink. " +
     "But I know also a lot of best restaurants with very testy food and no-alcoholic cocktail's receipts ;)")
 
-  def generateResponse(recipientMessage: Message,
-                       recipientInfo: Option[RecipientInfo]): RecipientInfo = {
+  def generateResponse(recipientMessage: Message, recipient: Recipient): BotResponse = {
 
+    dao.saveRecipientMessage(recipientMessage)
+
+    val recipientInfo = dao.getRecipientInfo(recipient)
+    val updatedRecipientInfo = updateRecipientInfo(recipientMessage, recipientInfo)
+
+    dao.saveResponse(updatedRecipientInfo.lastResponse)
+    dao.saveOrUpdateRecipientInfo(recipient, updatedRecipientInfo)
+
+    BotResponse(message = updatedRecipientInfo.lastResponse)
+  }
+
+  private def updateRecipientInfo(recipientMessage: Message, recipientInfo: Option[RecipientInfo]): RecipientInfo = {
     if (recipientInfo.isEmpty) {
       return RecipientInfo(lastResponse = GREETING_MESSAGE)
     }

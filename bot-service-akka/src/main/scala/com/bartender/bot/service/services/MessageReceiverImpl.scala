@@ -1,26 +1,28 @@
 package com.bartender.bot.service.services
 
-import com.bartender.bot.service.domain.{Bar, Location, Message, Recipient}
+import com.bartender.bot.service.domain._
 
-class MessageReceiverImpl(sender: MessageSender, dao: Dao,
+class MessageReceiverImpl(sender: MessageSender,
                           responseGenerator: ResponseGenerator,
                           barResearcher: BarResearcher) extends MessageReceiver {
 
-  override def receive(message: Message, recipient: Recipient) {
+  def receive(message: Message, recipient: Recipient) {
 
-    dao.saveRecipientMessage(message)
+    val response = responseGenerator.generateResponse(message, recipient)
 
-    val recipientInfo = dao.getRecipientInfo(recipient)
+    sender.sendMessage(response.message, recipient)
 
-    val updatedRecipientInfo = responseGenerator.generateResponse(message, recipientInfo)
-
-    dao.saveResponse(updatedRecipientInfo.lastResponse)
-    dao.saveOrUpdateRecipientInfo(recipient, updatedRecipientInfo)
-
-    sender.sendMessage(updatedRecipientInfo.lastResponse, recipient)
+    response.action match {
+      case Some(action) => action match {
+        case BotActions.COCKTAIL_BY_ALCOHOL => //todo
+        case BotActions.COCKTAIL_RANDOM => //todo
+        case BotActions.NEAREST_BAR => //todo: now waiting location, may be can find by city
+        case BotActions.INPUT_WELCOME => //todo: may be something tracking
+      }
+    }
   }
 
-  override def receiveNearestBar(location: Location, recipient: Recipient, offset: Int = 0): Option[Bar] = {
+  def receiveNearestBar(location: Location, recipient: Recipient, offset: Int = 0): Option[Bar] = {
 
     val bars = barResearcher.findNearestBars(location)
 
@@ -39,7 +41,7 @@ class MessageReceiverImpl(sender: MessageSender, dao: Dao,
 
   }
 
-  override def receiveBarDetails(barId: String, recipient: Recipient): Unit = {
+  def receiveBarDetails(barId: String, recipient: Recipient): Unit = {
     barResearcher.getBarDetails(barId) match {
       case Some(details) => sender.sendBarDetails(details, recipient)
       case None => sender.sendMessage(Message("I look everywhere, really! Nothing can't find!"), recipient)

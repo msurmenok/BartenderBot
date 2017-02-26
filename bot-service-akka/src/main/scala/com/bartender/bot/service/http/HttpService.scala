@@ -10,9 +10,9 @@ object HttpService extends Config {
   // TODO: use dependency injection container here
   val sender = new FbMessageSender()
   val dao = new MemoryDao()
-  val responseGenerator = new SimpleResponseGenerator()
+  val responseGenerator = new SimpleResponseGenerator(dao)
   val barResearcher = new GoogleBarResearcher()
-  val receiver = new MessageReceiverImpl(sender, dao, responseGenerator, barResearcher)
+  val receiver = new MessageReceiverImpl(sender, responseGenerator, barResearcher)
   val fbMessengerService = new FbMessengerService(receiver)
 
   val route = pathPrefix(apiVersion) {
