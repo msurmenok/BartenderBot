@@ -18,7 +18,9 @@ class MessageReceiverImpl(sender: MessageSender,
         case BotActions.COCKTAIL_RANDOM => //todo
         case BotActions.NEAREST_BAR => //todo: now waiting location, may be can find by city
         case BotActions.INPUT_WELCOME => //todo: may be something tracking
+        case _ => // do nothing
       }
+      case None => //do nothing
     }
   }
 

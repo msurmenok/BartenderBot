@@ -1,7 +1,8 @@
 package com.bartender.bot.tester
 
+import com.bartender.bot.service.api.ai.ApiAiClient
 import com.bartender.bot.service.domain.{Bar, Location, Message, Recipient}
-import com.bartender.bot.service.services.{GoogleBarResearcher, MemoryDao, MessageReceiverImpl, SimpleResponseGenerator}
+import com.bartender.bot.service.services._
 
 object ConsoleApp {
   val patternLocation = "l(\\d{1,3}\\.\\d+),(\\d{1,3}\\.\\d+)"
@@ -10,7 +11,7 @@ object ConsoleApp {
     val sender = new ConsoleSender()
     val dao = new MemoryDao()
     val barResearcher = new GoogleBarResearcher()
-    val responseGenerator = new SimpleResponseGenerator(dao)
+    val responseGenerator = new ApiAiResponseGenerator(new ApiAiClient())
     val receiver = new MessageReceiverImpl(sender, responseGenerator, barResearcher)
     val recipient = Recipient("test_recipient")
 

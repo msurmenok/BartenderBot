@@ -14,10 +14,10 @@ object ApiAiModel {
   }
 
   case class ApiAiMetadata(
-                            intentId: String,
-                            webhookUsed: String,
-                            webhookForSlotFillingUsed: String,
-                            intentName: String
+                            intentId: Option[String],
+                            webhookUsed: Option[String],
+                            webhookForSlotFillingUsed: Option[String],
+                            intentName: Option[String]
                           )
 
   case class ApiAiMessage(
@@ -27,7 +27,7 @@ object ApiAiModel {
 
   case class ApiAiFulfillment(
                                speech: String,
-                               messages: Seq[ApiAiMessage]
+                               messages: Option[Seq[ApiAiMessage]]
                              )
 
   case class ApiApiContext(
@@ -40,10 +40,10 @@ object ApiAiModel {
                           source: String,
                           resolvedQuery: String,
                           action: String,
-                          actionIncomplete: Boolean,
+                          actionIncomplete: Option[Boolean],
                           parameters: Option[Map[String, String]],
-                          contexts: Seq[ApiApiContext],
-                          metadata: ApiAiMetadata,
+                          contexts: Option[Seq[ApiApiContext]],
+                          metadata: Option[ApiAiMetadata],
                           fulfillment: ApiAiFulfillment,
                           score: Double
                         )
@@ -56,7 +56,7 @@ object ApiAiModel {
   case class ApiAiResponse(
                             id: String,
                             timestamp: String,
-                            lang: String,
+                            lang: Option[String],
                             result: ApiAiResult,
                             status: ApiAiStatus,
                             sessionId: String
