@@ -29,6 +29,10 @@ class MessageReceiverStub extends MessageReceiver {
   def receiveBarDetails(barId: String, recipient: Recipient) {
     barDetails = true
   }
+
+  override def receiveCoctailsByAlcohol(alcohol: String, recipient: Recipient, offset: Int): Unit = ???
+
+  override def receiveCocktailReceipt(cocktailId: String, recipient: Recipient): Unit = ???
 }
 
 class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteTest with FbJsonSupport with Config  with BeforeAndAfterEach {

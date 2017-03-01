@@ -9,7 +9,7 @@ trait MessageSender {
 
   def sendBarDetails(barDetails: BarDetails, recipient: Recipient)
 
-  def sendCocktailList(cocktails: Seq[Cocktail], recipient: Recipient)
+  def sendCocktailList(cocktails: Seq[Cocktail], recipient: Recipient, alcohol: String)
 
   def sendCocktailReceipt(cocktail: Cocktail, cocktailReceipt: CocktailReceipt, recipient: Recipient)
 }

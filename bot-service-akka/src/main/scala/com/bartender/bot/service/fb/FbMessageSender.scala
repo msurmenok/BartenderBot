@@ -1,6 +1,7 @@
 package com.bartender.bot.service.fb
 
 import com.bartender.bot.service.domain._
+import com.bartender.bot.service.fb.FbActionButtons.{BarDetailsButton, ShowNexBarButton}
 import com.bartender.bot.service.services.MessageSender
 
 import scala.collection.mutable.ListBuffer
@@ -24,7 +25,7 @@ class FbMessageSender(val fbMessengerSendApiClient: FbMessengerSendApiClient)
   }
 
   def sendNearestBar(bar: Bar, recipient: Recipient, location: Location, offset: Int): Unit = {
-    val buttons = Seq(FbActionButtons.barDetails(bar.id), FbActionButtons.barShowNext(location, offset))
+    val buttons = Seq(BarDetailsButton(bar.id), ShowNexBarButton(location, offset)).map(FbActionButtons.createFbTemplateButton)
 
     val element = FbTemplateElement(
       title = bar.name,
@@ -67,7 +68,11 @@ class FbMessageSender(val fbMessengerSendApiClient: FbMessengerSendApiClient)
         FbTemplateButton(FbTemplateButtonsType.phone_number, title = "Call to bar", payload = Some(phone))))
   }
 
-  override def sendCocktailList(cocktails: Seq[Cocktail], recipient: Recipient): Unit = ???
+  def sendCocktailList(cocktails: Seq[Cocktail], recipient: Recipient, alcohol: String): Unit = {
 
-  override def sendCocktailReceipt(cocktail: Cocktail, cocktailReceipt: CocktailReceipt, recipient: Recipient): Unit = ???
+  }
+
+  def sendCocktailReceipt(cocktail: Cocktail, cocktailReceipt: CocktailReceipt, recipient: Recipient): Unit = {
+
+  }
 }

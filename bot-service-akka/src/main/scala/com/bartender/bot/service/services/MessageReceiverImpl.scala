@@ -18,7 +18,7 @@ class MessageReceiverImpl(sender: MessageSender,
         case BotAction.CocktailByAlcohol(alcoholType) =>
           val cocktailList = cocktailResearcher.cocktailByAlcohol(alcoholType)
           if (cocktailList.nonEmpty){
-            sender.sendCocktailList(cocktailList, recipient)
+            sender.sendCocktailList(cocktailList, recipient, alcoholType)
           }
         case BotAction.CocktailReceiptRandom() =>
           cocktailResearcher.cocktailReceipt(None)
@@ -56,4 +56,8 @@ class MessageReceiverImpl(sender: MessageSender,
       case None => sender.sendMessage(Message("I look everywhere, really! Nothing can't find!"), recipient)
     }
   }
+
+  override def receiveCoctailsByAlcohol(alcohol: String, recipient: Recipient, offset: Int): Unit = ???
+
+  override def receiveCocktailReceipt(cocktailId: String, recipient: Recipient): Unit = ???
 }

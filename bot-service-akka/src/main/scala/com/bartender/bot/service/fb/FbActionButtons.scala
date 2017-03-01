@@ -4,34 +4,72 @@ import com.bartender.bot.service.domain.Location
 
 
 object FbActionButtons {
-  val BAR_DETAILS = "Details"
-  val SHOW_NEXT_BAR = "Show one more"
 
-  private val ARG_DIVIDER = ";"
-
-  def barDetails(barId: String): FbTemplateButton = {
-    FbTemplateButton(FbTemplateButtonsType.postback, title = BAR_DETAILS,
-      payload = Some(s"$BAR_DETAILS$ARG_DIVIDER$barId"))
+  object Tags extends Enumeration {
+    type EnumA = Value
+    val BAR_DETAILS, SHOW_NEXT_BAR, COCKTAIL_RECEIPT, SHOW_MORE_COCKTAILS = Value
   }
 
-  def barShowNext(location: Location, offset: Int): FbTemplateButton = {
-    FbTemplateButton(FbTemplateButtonsType.postback, title = SHOW_NEXT_BAR,
-      payload = Some(barShowNextPayloadToStr(location, offset)))
+  private val PARAMS_DIVIDER = ";"
+
+  def createFbTemplateButton(fbActionButton: FbActionButton[_]): FbTemplateButton = FbTemplateButton(
+    FbTemplateButtonsType.postback,
+    title = fbActionButton.title,
+    payload = Some(s"${fbActionButton.tag}${fbActionButton.paramsToStr().mkString(PARAMS_DIVIDER, PARAMS_DIVIDER, "")}"))
+
+  abstract class FbActionButton[Params](val params: Params, val title: String, val tag: Tags.Value) {
+    def paramsToStr(): Seq[String]
   }
 
-  def getBarDetailsPayload(string: String): String = {
-    val arg = string.split(ARG_DIVIDER)
-    arg(1)
+  case class BarDetailsButton(barId: String) extends FbActionButton[String](
+    params = barId,
+    title = "Details",
+    tag = Tags.BAR_DETAILS
+  ) {
+
+    def paramsToStr(): Seq[String] = Seq(barId)
   }
 
-  def getBarShowNextPayload(string: String): (Location, Int) = {
-    val arg = string.split(ARG_DIVIDER)
-    val location = Location(arg(1).toDouble, arg(2).toDouble)
-    val offset = arg(3).toInt
-    (location, offset)
+  case class ShowNexBarButton(location: Location, offset: Int) extends FbActionButton[(Location, Int)](
+    params = (location, offset),
+    title = "Show one more",
+    tag = Tags.SHOW_NEXT_BAR
+  ) {
+
+    def paramsToStr(): Seq[String] = Seq(location.lat.toString, location.lng.toString, offset.toString)
   }
 
-  private def barShowNextPayloadToStr(location: Location, offset: Int): String = {
-    s"$SHOW_NEXT_BAR$ARG_DIVIDER${location.lat}$ARG_DIVIDER${location.lng}$ARG_DIVIDER$offset"
+  case class CocktailReceiptButton(cocktailId: String) extends FbActionButton[String](
+    params = cocktailId,
+    title = "Receipt",
+    tag = Tags.COCKTAIL_RECEIPT
+  ) {
+
+    def paramsToStr(): Seq[String] = Seq(cocktailId)
   }
+
+  case class ShowMoreCocktailsButton(alcohol: String, offset: Int) extends FbActionButton[(String, Int)](
+    params = (alcohol, offset),
+    title = "Show more",
+    tag = Tags.SHOW_MORE_COCKTAILS
+  ) {
+
+    def paramsToStr(): Seq[String] = Seq(alcohol, offset.toString)
+  }
+
+  object Factory {
+
+    def create(payload: String): Option[FbActionButton[_]] = {
+      val params = payload.split(PARAMS_DIVIDER)
+      Tags.values.find(tag => params(0).equals(tag.toString)).map {
+        case Tags.BAR_DETAILS => BarDetailsButton(params(1))
+        case Tags.SHOW_NEXT_BAR => ShowNexBarButton(Location(params(1).toDouble, params(2).toDouble), params(3).toInt)
+        case Tags.SHOW_MORE_COCKTAILS => ShowMoreCocktailsButton(params(1), params(2).toInt)
+        case Tags.COCKTAIL_RECEIPT => CocktailReceiptButton(params(1))
+      }
+    }
+
+  }
+
 }
+
