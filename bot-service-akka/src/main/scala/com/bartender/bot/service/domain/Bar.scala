@@ -12,7 +12,17 @@ case class BarDetails(website: Option[String],
                       priceLevel: Option[Int],
                       phoneNumber: Option[String],
                       extraPhotoUrl: Option[String],
-                      reviews: Seq[BarReview])
+                      reviews: Seq[BarReview]) {
+  def priceLevelToStr(): String = {
+    val str = (0 to priceLevel.getOrElse(0)).map(_ => "$").mkString("")
+    if (priceLevel.isEmpty) {
+      "-"
+    }
+    else {
+      str
+    }
+  }
+}
 
 case class BarReview(author: String, text: String)
 

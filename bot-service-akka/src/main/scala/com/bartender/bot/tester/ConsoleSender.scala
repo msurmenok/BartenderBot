@@ -18,8 +18,19 @@ class ConsoleSender extends MessageSender {
     println(s"Bot: website: ${barDetails.website.getOrElse("-")}" +
       s"\n phone number: ${barDetails.phoneNumber.getOrElse("-")}" +
       s"\n rating: ${barDetails.rating.map(_.toString).getOrElse("-")}" +
-      s"\n price level: ${priceLevelToStr(barDetails.priceLevel)}" +
+      s"\n price level: ${barDetails.priceLevelToStr()}" +
       s"\n reviews: ${barDetails.reviews.mkString("\n       -")}" +
       s"\n\n for find other one bar input: next")
+  }
+
+  def sendCocktailList(cocktails: Seq[Cocktail], recipient: Recipient): Unit = {
+    println(s"Bot: cocktails: ${cocktails.map(_.name).mkString("\n       -")}")
+  }
+
+  def sendCocktailReceipt(cocktail: Cocktail, cocktailReceipt: CocktailReceipt, recipient: Recipient): Unit = {
+    println(s"Bot: cocktail: ${cocktail.name}" +
+      s"\n glass: ${cocktailReceipt.glass.getOrElse("-")}" +
+      s"\n instruction: ${cocktailReceipt.instruction.map(_.toString).getOrElse("-")}" +
+      s"\n reviews: ${cocktailReceipt.ingredients.mkString("\n       -")}")
   }
 }

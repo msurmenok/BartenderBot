@@ -8,11 +8,19 @@ import akka.stream.ActorMaterializer
 import com.bartender.bot.service.common.{Config, Logging}
 
 import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
 
+trait GooglePlacesClient {
 
-class GooglePlacesClient extends GooglePlacesJsonSupport with Config with Logging {
+  def nearbySearch(location: String, types: String, radius: String = "1000"): Option[GPResponse]
+
+  def details(placeId: String): Option[GPDetailResponse]
+
+  def getPhotoUrl(headOption: Option[GPPhotos]): Option[String]
+}
+
+class GooglePlacesClientHttp extends GooglePlacesClient with GooglePlacesJsonSupport with Config with Logging {
 
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
@@ -23,7 +31,7 @@ class GooglePlacesClient extends GooglePlacesJsonSupport with Config with Loggin
   val photoUrl = baseUrl + googlePlacesApiConf.getString("photo_path")
   val apiKey = googlePlacesApiConf.getString("api_key")
 
-  def nearbySearch(location: String, types: String, radius: String = "1000"): Option[GPResponse] = {
+  def nearbySearch(location: String, types: String, radius: String): Option[GPResponse] = {
 
     rootLogger.info(s"find bars nearest location($location)")
 

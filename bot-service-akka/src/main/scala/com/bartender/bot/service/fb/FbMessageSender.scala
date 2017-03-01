@@ -5,7 +5,7 @@ import com.bartender.bot.service.services.MessageSender
 
 import scala.collection.mutable.ListBuffer
 
-class FbMessageSender(val fbMessengerSendApiClient: FbMessengerSendApiClient = new FbMessengerSendApiClient())
+class FbMessageSender(val fbMessengerSendApiClient: FbMessengerSendApiClient)
   extends MessageSender {
 
   val max_message_leght = 320
@@ -40,7 +40,7 @@ class FbMessageSender(val fbMessengerSendApiClient: FbMessengerSendApiClient = n
     val templates = new ListBuffer[FbTemplateElement]()
     templates += FbTemplateElement(
       title = s"Rating: ${barDetails.rating.map(_.toString).getOrElse("-")}",
-      subtitle = Some(s"Price level: ${priceLevelToStr(barDetails.priceLevel)}"),
+      subtitle = Some(s"Price level: ${barDetails.priceLevelToStr()}"),
       image_url = barDetails.extraPhotoUrl,
       default_action = barDetails.website.map(url => FbTemplateElementDefaultAction(url = url)))
 
@@ -66,4 +66,8 @@ class FbMessageSender(val fbMessengerSendApiClient: FbMessengerSendApiClient = n
       barDetails.phoneNumber.map(phone =>
         FbTemplateButton(FbTemplateButtonsType.phone_number, title = "Call to bar", payload = Some(phone))))
   }
+
+  override def sendCocktailList(cocktails: Seq[Cocktail], recipient: Recipient): Unit = ???
+
+  override def sendCocktailReceipt(cocktail: Cocktail, cocktailReceipt: CocktailReceipt, recipient: Recipient): Unit = ???
 }

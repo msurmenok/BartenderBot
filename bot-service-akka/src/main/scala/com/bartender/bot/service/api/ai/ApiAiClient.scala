@@ -13,7 +13,11 @@ import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 
-class ApiAiClient extends ApiAiJsonSupport with Config with Logging {
+trait ApiAiClient {
+  def generateAnswer(query: String, sessionId: String): Option[ApiAiResponse]
+}
+
+class ApiAiClientHttp extends ApiAiClient with ApiAiJsonSupport with Config with Logging {
 
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()

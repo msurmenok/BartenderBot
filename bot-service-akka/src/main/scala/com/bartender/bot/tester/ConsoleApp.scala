@@ -1,8 +1,10 @@
 package com.bartender.bot.tester
 
-import com.bartender.bot.service.api.ai.ApiAiClient
+import com.bartender.bot.service.api.ai.{ApiAiClient, ApiAiClientHttp, ApiAiResponseGenerator}
 import com.bartender.bot.service.domain.{Bar, Location, Message, Recipient}
+import com.bartender.bot.service.google.{GoogleBarResearcher, GooglePlacesClientHttp}
 import com.bartender.bot.service.services._
+import com.bartender.bot.service.thecocktaildb.{ThecocktaildbClientHttp, ThecocktaildbCocktailResearcher}
 
 object ConsoleApp {
   val patternLocation = "l(\\d{1,3}\\.\\d+),(\\d{1,3}\\.\\d+)"
@@ -10,9 +12,15 @@ object ConsoleApp {
   def main(args: Array[String]): Unit = {
     val sender = new ConsoleSender()
     val dao = new MemoryDao()
-    val barResearcher = new GoogleBarResearcher()
-    val responseGenerator = new ApiAiResponseGenerator(new ApiAiClient())
-    val receiver = new MessageReceiverImpl(sender, responseGenerator, barResearcher)
+
+    val googlePlacesApiClient = new GooglePlacesClientHttp()
+    val barDao = new MemoryBarDao()
+    val barResearcher = new GoogleBarResearcher(googlePlacesApiClient, barDao)
+    val apiAiClient = new ApiAiClientHttp()
+    val responseGenerator = new ApiAiResponseGenerator(apiAiClient)
+    val thecocktaildbClient = new ThecocktaildbClientHttp()
+    val cocktailResearcher = new ThecocktaildbCocktailResearcher(thecocktaildbClient)
+    val receiver = new MessageReceiverImpl(sender, responseGenerator, barResearcher, cocktailResearcher)
     val recipient = Recipient("test_recipient")
 
     println("Welcome!")

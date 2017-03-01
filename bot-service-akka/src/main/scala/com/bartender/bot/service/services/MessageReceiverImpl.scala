@@ -4,7 +4,8 @@ import com.bartender.bot.service.domain._
 
 class MessageReceiverImpl(sender: MessageSender,
                           responseGenerator: ResponseGenerator,
-                          barResearcher: BarResearcher) extends MessageReceiver {
+                          barResearcher: BarResearcher,
+                          cocktailResearcher: CocktailResearcher) extends MessageReceiver {
 
   def receive(message: Message, recipient: Recipient) {
 
@@ -14,10 +15,16 @@ class MessageReceiverImpl(sender: MessageSender,
 
     response.action match {
       case Some(action) => action match {
-        case BotActions.COCKTAIL_BY_ALCOHOL => //todo
-        case BotActions.COCKTAIL_RANDOM => //todo
-        case BotActions.NEAREST_BAR => //todo: now waiting location, may be can find by city
-        case BotActions.INPUT_WELCOME => //todo: may be something tracking
+        case BotAction.CocktailByAlcohol(alcoholType) =>
+          val cocktailList = cocktailResearcher.cocktailByAlcohol(alcoholType)
+          if (cocktailList.nonEmpty){
+            sender.sendCocktailList(cocktailList, recipient)
+          }
+        case BotAction.CocktailReceiptRandom() =>
+          cocktailResearcher.cocktailReceipt(None)
+            .foreach(cocktail => sender.sendCocktailReceipt(cocktail._1,cocktail._2, recipient))
+        case BotAction.NearestBar() => //todo: now waiting location, may be can find by city
+        case BotAction.InputWelcome() => //todo: may be something tracking
         case _ => // do nothing
       }
       case None => //do nothing

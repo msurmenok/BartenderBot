@@ -9,8 +9,15 @@ import com.bartender.bot.service.common.{Config, Logging}
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
+trait FbMessengerSendApiClient {
+  def sendTextMessage(recipient: FbRecipient, text: String): Unit
 
-class FbMessengerSendApiClient extends FbJsonSupport with Config with Logging {
+  def sendTemplateMessage(recipient: FbRecipient, elements: FbTemplateElement*): Unit
+
+  def sendListTemplateMessage(recipient: FbRecipient, elements: Seq[FbTemplateElement], button: Option[FbTemplateButton] = None): Unit
+}
+
+class FbMessengerSendApiClientHttp extends FbMessengerSendApiClient with FbJsonSupport with Config with Logging {
 
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()

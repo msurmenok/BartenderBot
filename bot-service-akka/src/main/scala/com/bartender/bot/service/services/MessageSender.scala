@@ -9,13 +9,7 @@ trait MessageSender {
 
   def sendBarDetails(barDetails: BarDetails, recipient: Recipient)
 
-  def priceLevelToStr(priceLevel: Option[Int]): String = {
-    val str = (0 to priceLevel.getOrElse(0)).map(_ => "$").mkString("")
-    if (priceLevel.isEmpty) {
-      "-"
-    }
-    else {
-      str
-    }
-  }
+  def sendCocktailList(cocktails: Seq[Cocktail], recipient: Recipient)
+
+  def sendCocktailReceipt(cocktail: Cocktail, cocktailReceipt: CocktailReceipt, recipient: Recipient)
 }

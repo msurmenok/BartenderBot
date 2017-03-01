@@ -2,7 +2,11 @@ package com.bartender.bot.service.api.ai
 
 object ApiAiModel {
 
-  object ApiAiActions{
+  object ApiAiParameters {
+    val alcoholType = "alcohol_type"
+  }
+
+  object ApiAiActions {
     val nearest_bar = "nearest.bar"
     val input_welcome = "input.welcome"
     val cocktail_byalcohol = "cocktail.byalcohol"
