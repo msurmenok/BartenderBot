@@ -46,7 +46,7 @@ class FbMessengerSendApiClientHttp extends FbMessengerSendApiClient with FbJsonS
       elements = Some(elements),
       buttons = button.map(b => Seq(b)),
       template_type = Some(FbTemplateType.list),
-      top_element_style = Some(FbTopElementListTemplateType.large))
+      top_element_style = Some(FbTopElementListTemplateType.compact))
     val attachment = FbAttachment(FbAttachmentType.template, payload = payload)
     val body = FbMessengerRequest(recipient, Some(FbSendMessage(attachment = Some(attachment))))
     val response = sendFbMessengerRequest(body)

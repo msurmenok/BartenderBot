@@ -79,17 +79,20 @@ class FbMessageSender(val fbMessengerSendApiClient: FbMessengerSendApiClient)
     val fbTemplateElements = cocktails.slice(offset, newOffset).map(cocktail =>
       FbTemplateElement(
         title = cocktail.name,
+        subtitle = Some(s"based on $alcohol"),
         image_url = cocktail.imageUrl,
         buttons = Some(Seq(
           FbActionButtons.createFbTemplateButton(CocktailReceiptButton(cocktail.id))
         )))
     )
-
-    fbMessengerSendApiClient.sendListTemplateMessage(
-      FbRecipient(recipient.id),
-      fbTemplateElements,
-      fbActionButton
-    )
+    if (fbTemplateElements.size >= min_list_template_elements_count
+      && fbTemplateElements.size <= max_list_template_elements_count) {
+      fbMessengerSendApiClient.sendListTemplateMessage(
+        FbRecipient(recipient.id),
+        fbTemplateElements,
+        fbActionButton
+      )
+    }
   }
 
   def sendCocktailReceipt(cocktail: Cocktail, cocktailReceipt: CocktailReceipt, recipient: Recipient): Unit = {
@@ -100,13 +103,19 @@ class FbMessageSender(val fbMessengerSendApiClient: FbMessengerSendApiClient)
 
     fbMessengerSendApiClient.sendTemplateMessage(FbRecipient(recipient.id), element)
 
-    cocktailReceipt.instruction.foreach(instruction =>
-      sendMessage(Message(instruction), recipient))
-
     if (cocktailReceipt.ingredients.nonEmpty) {
       val ingredients = cocktailReceipt.ingredients.map(ingredient =>
-        s"- ${ingredient.name} (${ingredient.measure})").mkString("Ingredients: \n", "\n", "")
+        s"- ${ingredient.name} ${
+          if (ingredient.measure.trim.nonEmpty) {
+            s"(${ingredient.measure})"
+          } else {
+            ""
+          }
+        }").mkString("Ingredients: \n", "\n", "")
       sendMessage(Message(ingredients), recipient)
     }
+
+    cocktailReceipt.instruction.foreach(instruction =>
+      sendMessage(Message(instruction), recipient))
   }
 }

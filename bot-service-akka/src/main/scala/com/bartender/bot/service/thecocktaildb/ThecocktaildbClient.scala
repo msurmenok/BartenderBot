@@ -2,7 +2,7 @@ package com.bartender.bot.service.thecocktaildb
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{HttpMethods, HttpRequest}
+import akka.http.scaladsl.model.{HttpMethods, HttpRequest, MediaTypes}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import com.bartender.bot.service.common.{Config, Logging}
@@ -46,10 +46,9 @@ class ThecocktaildbClientHttp extends ThecocktaildbClient with ThecocktaildbJson
   private def cocktailsRequest(path: String): Option[Seq[ThecocktaildbDrink]] = {
     val httpRequest = HttpRequest(method = HttpMethods.GET, uri = s"$url$path")
     val response = Await.result(Http().singleRequest(httpRequest), Duration.Inf)
-
     rootLogger.info(s"response status: ${response.status}")
 
-    if (response.status.isSuccess()) {
+    if (response.status.isSuccess() && response.entity.contentType.mediaType == MediaTypes.`application/json`) {
       Await.result(Unmarshal(response.entity).to[ThecocktaildbResponse], Duration.Inf).drinks
     } else {
       None
