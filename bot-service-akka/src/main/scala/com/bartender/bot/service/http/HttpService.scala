@@ -21,7 +21,8 @@ object HttpService extends Config {
   val googlePlacesApiClient = new GooglePlacesClientHttp()
   val barDao = new MemoryBarDao()
   val barResearcher = new GoogleBarResearcher(googlePlacesApiClient, barDao)
-  val cocktailResearcher = new ThecocktaildbCocktailResearcher(thecocktaildbClient)
+  val cocktailDao = new CocktailDaoMemory()
+  val cocktailResearcher = new ThecocktaildbCocktailResearcher(thecocktaildbClient, cocktailDao)
   val receiver = new MessageReceiverImpl(sender, responseGenerator, barResearcher, cocktailResearcher)
   val fbMessengerService = new FbMessengerService(receiver)
 

@@ -19,11 +19,11 @@ trait BarDao {
 
 class MemoryBarDao() extends BarDao {
 
-  val bar_by_location_time_mills_period_available = 60 * 60 * 1000
+  private val bar_by_location_time_mills_period_available = 60 * 60 * 1000
 
-  val locationDateUpdate = mutable.HashMap[Location, Long]()
-  val barsByLocation = mutable.HashMap[Location, Seq[Bar]]()
-  val barDetails = mutable.HashMap[String, BarDetails]()
+  private val locationDateUpdate = mutable.HashMap[Location, Long]()
+  private val barsByLocation = mutable.HashMap[Location, Seq[Bar]]()
+  private val barDetails = mutable.HashMap[String, BarDetails]()
 
   def getBarDetails(barId: String): Option[BarDetails] = {
     barDetails.get(barId)

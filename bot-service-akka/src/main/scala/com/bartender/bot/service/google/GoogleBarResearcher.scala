@@ -3,9 +3,7 @@ package com.bartender.bot.service.google
 import com.bartender.bot.service.domain.{Bar, BarDetails, BarReview, Location}
 import com.bartender.bot.service.services.{BarDao, BarResearcher}
 
-/**
-  * Created by victoria on 01.03.17.
-  */
+
 class GoogleBarResearcher(val googlePlacesClient: GooglePlacesClient, val barDao: BarDao)
   extends BarResearcher {
 

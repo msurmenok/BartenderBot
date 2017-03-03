@@ -44,7 +44,7 @@ class FbMessengerService(receiver: MessageReceiver) extends Directives with FbJs
         case ShowNexBarButton(location, offset) => receiver.receiveNearestBar(location, recipient, offset)
         case BarDetailsButton(barId) => receiver.receiveBarDetails(barId, recipient)
         case CocktailReceiptButton(cocktailId) => receiver.receiveCocktailReceipt(cocktailId, recipient)
-        case ShowMoreCocktailsButton(alcohol, offset) => receiver.receiveCoctailsByAlcohol(alcohol, recipient, offset)
+        case ShowMoreCocktailsButton(alcohol, offset) => receiver.receiveCocktailsByAlcohol(alcohol, recipient, offset)
       }
       case None => rootLogger.debug(s"Don't understand posback payload: ${postback.payload}")
     }

@@ -1,7 +1,7 @@
 package com.bartender.bot.service.fb
 
 import com.bartender.bot.service.domain._
-import com.bartender.bot.service.fb.FbActionButtons.{BarDetailsButton, ShowNexBarButton}
+import com.bartender.bot.service.fb.FbActionButtons.{BarDetailsButton, CocktailReceiptButton, ShowMoreCocktailsButton, ShowNexBarButton}
 import com.bartender.bot.service.services.MessageSender
 
 import scala.collection.mutable.ListBuffer
@@ -68,11 +68,45 @@ class FbMessageSender(val fbMessengerSendApiClient: FbMessengerSendApiClient)
         FbTemplateButton(FbTemplateButtonsType.phone_number, title = "Call to bar", payload = Some(phone))))
   }
 
-  def sendCocktailList(cocktails: Seq[Cocktail], recipient: Recipient, alcohol: String): Unit = {
+  def sendCocktailList(cocktails: Seq[Cocktail], recipient: Recipient, alcohol: String, offset: Int): Unit = {
+    val newOffset = offset + max_list_template_elements_count
+    val fbActionButton = if (newOffset < cocktails.size) {
+      Some(FbActionButtons.createFbTemplateButton(ShowMoreCocktailsButton(alcohol, newOffset)))
+    } else {
+      None
+    }
 
+    val fbTemplateElements = cocktails.slice(offset, newOffset).map(cocktail =>
+      FbTemplateElement(
+        title = cocktail.name,
+        image_url = cocktail.imageUrl,
+        buttons = Some(Seq(
+          FbActionButtons.createFbTemplateButton(CocktailReceiptButton(cocktail.id))
+        )))
+    )
+
+    fbMessengerSendApiClient.sendListTemplateMessage(
+      FbRecipient(recipient.id),
+      fbTemplateElements,
+      fbActionButton
+    )
   }
 
   def sendCocktailReceipt(cocktail: Cocktail, cocktailReceipt: CocktailReceipt, recipient: Recipient): Unit = {
+    val element = FbTemplateElement(
+      title = cocktail.name,
+      subtitle = cocktailReceipt.glass,
+      image_url = cocktail.imageUrl)
 
+    fbMessengerSendApiClient.sendTemplateMessage(FbRecipient(recipient.id), element)
+
+    cocktailReceipt.instruction.foreach(instruction =>
+      sendMessage(Message(instruction), recipient))
+
+    if (cocktailReceipt.ingredients.nonEmpty) {
+      val ingredients = cocktailReceipt.ingredients.map(ingredient =>
+        s"- ${ingredient.name} (${ingredient.measure})").mkString("Ingredients: \n", "\n", "")
+      sendMessage(Message(ingredients), recipient)
+    }
   }
 }

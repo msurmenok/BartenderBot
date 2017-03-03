@@ -3,7 +3,7 @@ package com.bartender.bot.service.services
 import com.bartender.bot.service.domain.{Bar, Location, Message, Recipient}
 
 trait MessageReceiver {
-  def receiveCoctailsByAlcohol(alcohol: String, recipient: Recipient, offset: Int)
+  def receiveCocktailsByAlcohol(alcohol: String, recipient: Recipient, offset: Int)
 
   def receiveCocktailReceipt(cocktailId: String, recipient: Recipient)
 

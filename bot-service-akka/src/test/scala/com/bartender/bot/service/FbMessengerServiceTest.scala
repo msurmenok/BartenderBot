@@ -15,6 +15,8 @@ class MessageReceiverStub extends MessageReceiver {
   var text: String = _
   var nearestBar: Boolean = false
   var barDetails: Boolean = false
+  var cocktailReceipt = false
+  var moreCocktailsByAlcohol = false
 
   def receive(message: Message, recipient: Recipient) {
     this.text = message.text
@@ -30,9 +32,13 @@ class MessageReceiverStub extends MessageReceiver {
     barDetails = true
   }
 
-  override def receiveCoctailsByAlcohol(alcohol: String, recipient: Recipient, offset: Int): Unit = ???
+  def receiveCocktailsByAlcohol(alcohol: String, recipient: Recipient, offset: Int): Unit = {
+    moreCocktailsByAlcohol = true
+  }
 
-  override def receiveCocktailReceipt(cocktailId: String, recipient: Recipient): Unit = ???
+  def receiveCocktailReceipt(cocktailId: String, recipient: Recipient): Unit = {
+    cocktailReceipt = true
+  }
 }
 
 class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteTest with FbJsonSupport with Config  with BeforeAndAfterEach {
@@ -101,6 +107,9 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
       Post(webhookPath, requestEntity) ~> fbMessengerService.route ~> check {
         status.isSuccess() shouldEqual true
         receiver.nearestBar shouldEqual true
+        receiver.moreCocktailsByAlcohol shouldEqual false
+        receiver.barDetails shouldEqual false
+        receiver.cocktailReceipt shouldEqual false
       }
     }
 
@@ -109,6 +118,31 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
       Post(webhookPath, requestEntity) ~> fbMessengerService.route ~> check {
         status.isSuccess() shouldEqual true
         receiver.barDetails shouldEqual true
+        receiver.moreCocktailsByAlcohol shouldEqual false
+        receiver.nearestBar shouldEqual false
+        receiver.cocktailReceipt shouldEqual false
+      }
+    }
+
+    "receive postback show more cocktails by alcohol" in {
+      val requestEntity = HttpEntity(MediaTypes.`application/json`, postbackMoreCoctailsByAlcohol)
+      Post(webhookPath, requestEntity) ~> fbMessengerService.route ~> check {
+        status.isSuccess() shouldEqual true
+        receiver.moreCocktailsByAlcohol shouldEqual true
+        receiver.nearestBar shouldEqual false
+        receiver.barDetails shouldEqual false
+        receiver.cocktailReceipt shouldEqual false
+      }
+    }
+
+    "receive postback cocktail receipt" in {
+      val requestEntity = HttpEntity(MediaTypes.`application/json`, postbackCoctailReceipt)
+      Post(webhookPath, requestEntity) ~> fbMessengerService.route ~> check {
+        status.isSuccess() shouldEqual true
+        receiver.cocktailReceipt shouldEqual true
+        receiver.nearestBar shouldEqual false
+        receiver.barDetails shouldEqual false
+        receiver.moreCocktailsByAlcohol shouldEqual false
       }
     }
 
@@ -268,7 +302,7 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
       |               },
       |               "timestamp":0,
       |               "postback":{
-      |                  "payload":"Show one more;13.732900;100.562810;1"
+      |                  "payload":"SHOW_NEXT_BAR;13.732900;100.562810;1"
       |               }
       |            }
       |         ]
@@ -276,7 +310,6 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
       |   ]
       |}
       |    """.stripMargin)
-
 
   val postBackBarDetails = ByteString(
     """
@@ -296,7 +329,7 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
       |               },
       |               "timestamp":0,
       |               "postback":{
-      |                  "payload":"Details;ChIJN1t_tDeuEmsRUsoyG83frY4"
+      |                  "payload":"BAR_DETAILS;ChIJN1t_tDeuEmsRUsoyG83frY4"
       |               }
       |            }
       |         ]
@@ -304,6 +337,61 @@ class FbMessengerServiceTest extends WordSpec with Matchers with ScalatestRouteT
       |   ]
       |}
       |    """.stripMargin)
+
+  val postbackCoctailReceipt = ByteString(
+    """
+      {
+      |   "object":"page",
+      |   "entry":[
+      |      {
+      |         "id":"PAGE_ID",
+      |         "time":1479158759114,
+      |         "messaging":[
+      |            {
+      |               "sender":{
+      |                  "id":"USER_ID"
+      |               },
+      |               "recipient":{
+      |                  "id":"PAGE_ID"
+      |               },
+      |               "timestamp":0,
+      |               "postback":{
+      |                  "payload":"COCKTAIL_RECEIPT;ChIJN1t_tDeuEmsRUsoyG83frY4"
+      |               }
+      |            }
+      |         ]
+      |      }
+      |   ]
+      |}
+      |    """.stripMargin)
+
+  val postbackMoreCoctailsByAlcohol = ByteString(
+    """
+      {
+      |   "object":"page",
+      |   "entry":[
+      |      {
+      |         "id":"PAGE_ID",
+      |         "time":1479158759114,
+      |         "messaging":[
+      |            {
+      |               "sender":{
+      |                  "id":"USER_ID"
+      |               },
+      |               "recipient":{
+      |                  "id":"PAGE_ID"
+      |               },
+      |               "timestamp":0,
+      |               "postback":{
+      |                  "payload":"SHOW_MORE_COCKTAILS_BY_ALCOHOL;vodka;4"
+      |               }
+      |            }
+      |         ]
+      |      }
+      |   ]
+      |}
+      |    """.stripMargin)
+
 
   val request1 = ByteString(
     """

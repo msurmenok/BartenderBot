@@ -15,14 +15,8 @@ class MessageReceiverImpl(sender: MessageSender,
 
     response.action match {
       case Some(action) => action match {
-        case BotAction.CocktailByAlcohol(alcoholType) =>
-          val cocktailList = cocktailResearcher.cocktailByAlcohol(alcoholType)
-          if (cocktailList.nonEmpty){
-            sender.sendCocktailList(cocktailList, recipient, alcoholType)
-          }
-        case BotAction.CocktailReceiptRandom() =>
-          cocktailResearcher.cocktailReceipt(None)
-            .foreach(cocktail => sender.sendCocktailReceipt(cocktail._1,cocktail._2, recipient))
+        case BotAction.CocktailByAlcohol(alcoholType) => receiveCocktailsByAlcohol(alcoholType, recipient, 0)
+        case BotAction.CocktailReceiptRandom() => receiveCocktailReceipt(None, recipient)
         case BotAction.NearestBar() => //todo: now waiting location, may be can find by city
         case BotAction.InputWelcome() => //todo: may be something tracking
         case _ => // do nothing
@@ -57,7 +51,19 @@ class MessageReceiverImpl(sender: MessageSender,
     }
   }
 
-  override def receiveCoctailsByAlcohol(alcohol: String, recipient: Recipient, offset: Int): Unit = ???
+  def receiveCocktailsByAlcohol(alcohol: String, recipient: Recipient, offset: Int): Unit = {
+    val cocktailList = cocktailResearcher.cocktailByAlcohol(alcohol)
+    if (cocktailList.nonEmpty) {
+      sender.sendCocktailList(cocktailList, recipient, alcohol, offset)
+    }
+  }
 
-  override def receiveCocktailReceipt(cocktailId: String, recipient: Recipient): Unit = ???
+  def receiveCocktailReceipt(cocktailId: String, recipient: Recipient): Unit = {
+    receiveCocktailReceipt(Some(cocktailId), recipient)
+  }
+
+  private def receiveCocktailReceipt(cocktailId: Option[String], recipient: Recipient): Unit = {
+    cocktailResearcher.cocktailReceipt(cocktailId)
+      .foreach(cocktail => sender.sendCocktailReceipt(cocktail._1, cocktail._2, recipient))
+  }
 }

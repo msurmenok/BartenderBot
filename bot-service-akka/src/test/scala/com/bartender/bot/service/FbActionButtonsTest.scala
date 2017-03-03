@@ -60,7 +60,7 @@ class FbActionButtonsTest extends FlatSpec with Matchers {
 
   "parsing show more cocktails payload" should "alcohol and offset" in {
 
-    val actual = FbActionButtons.Factory.create("SHOW_MORE_COCKTAILS;vodka;1")
+    val actual = FbActionButtons.Factory.create("SHOW_MORE_COCKTAILS_BY_ALCOHOL;vodka;1")
 
     actual.get shouldEqual ShowMoreCocktailsButton("vodka", 1)
   }
@@ -72,6 +72,6 @@ class FbActionButtonsTest extends FlatSpec with Matchers {
     actual shouldEqual FbTemplateButton(
       FbTemplateButtonsType.postback,
       title = "Show more",
-      payload = Some("SHOW_MORE_COCKTAILS;vodka;1"))
+      payload = Some("SHOW_MORE_COCKTAILS_BY_ALCOHOL;vodka;1"))
   }
 }

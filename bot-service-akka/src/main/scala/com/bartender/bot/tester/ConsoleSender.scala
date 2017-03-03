@@ -23,7 +23,7 @@ class ConsoleSender extends MessageSender {
       s"\n\n for find other one bar input: next")
   }
 
-  def sendCocktailList(cocktails: Seq[Cocktail], recipient: Recipient, alcohol: String): Unit = {
+  def sendCocktailList(cocktails: Seq[Cocktail], recipient: Recipient, alcohol: String, offset: Int): Unit = {
     println(s"Bot: cocktails: ${cocktails.map(_.name).mkString("\n       -")}")
   }
 
@@ -31,6 +31,6 @@ class ConsoleSender extends MessageSender {
     println(s"Bot: cocktail: ${cocktail.name}" +
       s"\n glass: ${cocktailReceipt.glass.getOrElse("-")}" +
       s"\n instruction: ${cocktailReceipt.instruction.map(_.toString).getOrElse("-")}" +
-      s"\n reviews: ${cocktailReceipt.ingredients.mkString("\n       -")}")
+      s"\n ingredients: ${cocktailReceipt.ingredients.mkString("\n       -")}")
   }
 }
